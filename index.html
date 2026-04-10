@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button id="themeBtn" class="theme-btn" title="Toggle Dark Mode">
+            <span class="sun-icon">☀️</span>
+            <span class="moon-icon">🌙</span>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🔄 Sorting Algorithm Visualizer</h1>
+                <p>Master sorting algorithms with interactive visualizations and real-time metrics</p>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel: Controls -->
+            <aside class="control-panel glass-effect">
+                <h2>Controls</h2>
+
+                <!-- Algorithm Selection -->
+                <div class="control-group">
+                    <label>Algorithm</label>
+                    <select id="algorithmSelect" class="select-input">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="merge">Merge Sort</option>
+                        <option value="quick">Quick Sort</option>
+                    </select>
+                </div>
+
+                <!-- Array Size Control -->
+                <div class="control-group">
+                    <label>Array Size: <span id="arraySizeValue">50</span></label>
+                    <input type="range" id="arraySizeSlider" min="10" max="100" value="50" class="slider">
+                </div>
+
+                <!-- Speed Control -->
+                <div class="control-group">
+                    <label>Speed: <span id="speedValue">1x</span></label>
+                    <input type="range" id="speedSlider" min="0.25" max="2" step="0.25" value="1" class="slider">
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="button-group">
+                    <button id="playBtn" class="btn btn-primary">▶ Play</button>
+                    <button id="pauseBtn" class="btn btn-secondary" disabled>⏸ Pause</button>
+                    <button id="resetBtn" class="btn btn-secondary">↻ Reset</button>
+                </div>
+
+                <!-- Step Controls -->
+                <div class="button-group">
+                    <button id="prevStepBtn" class="btn btn-small">⬅ Prev</button>
+                    <button id="nextStepBtn" class="btn btn-small">Next ➜</button>
+                </div>
+
+                <!-- Step Counter -->
+                <div class="step-counter">
+                    Step <span id="stepCounter">0</span> / <span id="totalSteps">0</span>
+                </div>
+
+                <!-- Array Input Methods -->
+                <div class="control-group">
+                    <button id="randomBtn" class="btn btn-outline">🎲 Random Array</button>
+                </div>
+
+                <div class="control-group">
+                    <label>Custom Array (comma-separated)</label>
+                    <input type="text" id="customInput" class="text-input" placeholder="e.g., 5,2,8,1,9">
+                </div>
+
+                <div class="control-group">
+                    <button id="applyCustomBtn" class="btn btn-outline">Apply</button>
+                </div>
+
+                <!-- Mode Selection -->
+                <hr style="margin: 15px 0; opacity: 0.3;">
+                <div class="control-group">
+                    <label>Mode</label>
+                    <select id="modeSelect" class="select-input">
+                        <option value="visualize">Visualize</option>
+                        <option value="compare">Compare Two</option>
+                        <option value="gamify">Gamified</option>
+                        <option value="benchmark">Benchmark</option>
+                    </select>
+                </div>
+
+                <!-- AI Suggestion -->
+                <div class="control-group">
+                    <button id="suggestBtn" class="btn btn-outline">🤖 AI Suggest</button>
+                </div>
+            </aside>
+
+            <!-- Center Panel: Visualization -->
+            <div class="visualization-area glass-effect">
+                <div id="visualizationContainer" class="visualization-container">
+                    <div id="canvas-container" class="canvas-container"></div>
+                </div>
+
+                <!-- Metrics Display -->
+                <div class="metrics-display">
+                    <div class="metric-item">
+                        <span class="metric-label">Comparisons:</span>
+                        <span id="comparisons" class="metric-value">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Swaps:</span>
+                        <span id="swaps" class="metric-value">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Time:</span>
+                        <span id="elapsedTime" class="metric-value">0ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Info -->
+            <aside class="info-panel glass-effect">
+                <!-- Explanation -->
+                <div class="info-section">
+                    <h3>Step Explanation</h3>
+                    <p id="explanation" class="explanation-text">Generate an array to begin...</p>
+                </div>
+
+                <!-- Algorithm Info -->
+                <div class="info-section">
+                    <h3>Algorithm Info</h3>
+                    <div id="algoInfo" class="algo-info">
+                        <div class="info-row">
+                            <span class="label">Time (Avg):</span>
+                            <span id="timeComplexity">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Time (Worst):</span>
+                            <span id="worstComplexity">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Space:</span>
+                            <span id="spaceComplexity">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Stable:</span>
+                            <span id="stability">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Suggestion Result -->
+                <div class="info-section">
+                    <h3>AI Suggestion</h3>
+                    <p id="suggestResult" class="suggestion-text">No analysis yet</p>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Comparison Mode -->
+        <div id="comparisonMode" class="comparison-mode" style="display: none;">
+            <div class="comparison-header">
+                <h2>Algorithm Comparison</h2>
+                <button id="closeComparison" class="btn btn-small">✕ Close</button>
+            </div>
+            <div class="comparison-container">
+                <div class="comparison-algo">
+                    <h3>Algorithm 1: <span id="algo1Name"></span></h3>
+                    <div id="algo1Canvas" class="canvas-container"></div>
+                    <div class="comparison-metrics">
+                        <span>Comparisons: <strong id="algo1Comparisons">0</strong></span>
+                        <span>Swaps: <strong id="algo1Swaps">0</strong></span>
+                        <span>Time: <strong id="algo1Time">0ms</strong></span>
+                    </div>
+                </div>
+                <div class="comparison-algo">
+                    <h3>Algorithm 2: <span id="algo2Name"></span></h3>
+                    <div id="algo2Canvas" class="canvas-container"></div>
+                    <div class="comparison-metrics">
+                        <span>Comparisons: <strong id="algo2Comparisons">0</strong></span>
+                        <span>Swaps: <strong id="algo2Swaps">0</strong></span>
+                        <span>Time: <strong id="algo2Time">0ms</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gamified Mode -->
+        <div id="gamifyMode" class="gamify-mode" style="display: none;">
+            <div class="gamify-header">
+                <h2>Gamified Sorting</h2>
+                <button id="closeGamify" class="btn btn-small">✕ Close</button>
+            </div>
+            <div class="gamify-container">
+                <div class="gamify-info">
+                    <p>Click on bars to swap them. Sort the array as fast as you can!</p>
+                    <div class="gamify-stats">
+                        <span>Time: <strong id="gamifyTime">0s</strong></span>
+                        <span>Swaps: <strong id="gamifySwaps">0</strong></span>
+                        <span>Inverted: <strong id="gamifyInversions">0</strong></span>
+                    </div>
+                </div>
+                <div id="gamifyCanvas" class="canvas-container"></div>
+                <button id="submitGameBtn" class="btn btn-primary">Submit Solution</button>
+            </div>
+        </div>
+
+        <!-- Benchmark Mode -->
+        <div id="benchmarkMode" class="benchmark-mode" style="display: none;">
+            <div class="benchmark-header">
+                <h2>Benchmark Mode</h2>
+                <button id="closeBenchmark" class="btn btn-small">✕ Close</button>
+            </div>
+            <div class="benchmark-container">
+                <div class="benchmark-controls">
+                    <label>Test Size:</label>
+                    <select id="benchmarkSize" class="select-input">
+                        <option value="100">100 elements</option>
+                        <option value="500">500 elements</option>
+                        <option value="1000">1000 elements</option>
+                    </select>
+                    <button id="runBenchmarkBtn" class="btn btn-primary">Run Benchmark</button>
+                </div>
+                <div id="benchmarkResults" class="benchmark-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
