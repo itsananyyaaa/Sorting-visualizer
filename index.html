@@ -7,22 +7,125 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="title">🔄 Sorting Algorithm Visualizer</h1>
+            <p class="subtitle">Watch sorting algorithms in action with real-time visualization</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
     <div class="container">
-        <header class="header">
-            <h1>Sorting Algorithm Visualizer</h1>
-        </header>
+        <!-- Sidebar: Controls -->
+        <aside class="sidebar">
+            <div class="control-section">
+                <h2>Algorithm Selection</h2>
+                <select id="algorithmSelect" class="algorithm-select">
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="selection">Selection Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="merge">Merge Sort</option>
+                    <option value="quick">Quick Sort</option>
+                </select>
+                <p class="algorithm-description" id="algorithmDesc">
+                    Select an algorithm to see its description here.
+                </p>
+            </div>
 
-        <div class="controls">
-            <!-- Controls will be added here -->
-        </div>
+            <div class="control-section">
+                <h2>Controls</h2>
+                <div class="button-group">
+                    <button id="playBtn" class="btn btn-primary">▶ Play</button>
+                    <button id="pauseBtn" class="btn btn-secondary" disabled>⏸ Pause</button>
+                    <button id="resetBtn" class="btn btn-secondary">↻ Reset</button>
+                </div>
+            </div>
 
-        <div class="visualization">
-            <!-- Visualization will be rendered here -->
-        </div>
+            <div class="control-section">
+                <h2>Settings</h2>
+                <div class="setting-item">
+                    <label>Array Size</label>
+                    <div class="slider-container">
+                        <input type="range" id="sizeSlider" min="5" max="100" value="20" class="slider">
+                        <span id="sizeValue" class="slider-value">20</span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Speed</label>
+                    <div class="slider-container">
+                        <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="1" class="slider">
+                        <span id="speedValue" class="slider-value">1.0x</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="info">
-            <!-- Info panels will be added here -->
-        </div>
+            <div class="control-section">
+                <h2>Actions</h2>
+                <button id="randomBtn" class="btn btn-outline">🔀 Random Array</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Visualization Area -->
+            <section class="visualization-section">
+                <div class="section-header">
+                    <h2>Visualization</h2>
+                    <span class="metric" id="comparisons">Comparisons: 0</span>
+                    <span class="metric" id="swaps">Swaps: 0</span>
+                </div>
+                <div class="visualization-container" id="visualizationArea">
+                    <!-- Array elements will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Explanation and Info Area -->
+            <section class="info-section">
+                <div class="info-grid">
+                    <!-- Explanation Panel -->
+                    <div class="info-panel">
+                        <h3>Explanation</h3>
+                        <div class="explanation-content" id="explanation">
+                            <p>Select an algorithm and click Play to start the visualization.</p>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Panel -->
+                    <div class="info-panel">
+                        <h3>Metrics</h3>
+                        <div class="metrics-content">
+                            <div class="metric-row">
+                                <span>Time Complexity (Avg):</span>
+                                <span id="timeComplexity">-</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Time Complexity (Worst):</span>
+                                <span id="worstComplexity">-</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Space Complexity:</span>
+                                <span id="spaceComplexity">-</span>
+                            </div>
+                            <div class="metric-row">
+                                <span>Stable:</span>
+                                <span id="stability">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Code Tracing Area -->
+            <section class="code-section">
+                <div class="section-header">
+                    <h2>Code Trace</h2>
+                </div>
+                <div class="code-trace" id="codeTrace">
+                    <p class="placeholder">Algorithm steps will appear here during execution.</p>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script src="script.js"></script>
