@@ -277,10 +277,20 @@ class Visualizer {
         const maxValue = Math.max(...this.array);
         
         this.array.forEach((value, index) => {
-            const barHeight = (value / maxValue) * 100;
             const bar = document.createElement('div');
             bar.className = 'bar';
-            bar.style.height = barHeight + '%';
+            
+            // Set dynamic size based on value (for modern blocks)
+            const sizePercentage = (value / maxValue) * 100;
+            const minSize = 45;
+            const maxSize = 90;
+            const blockSize = minSize + (sizePercentage / 100) * (maxSize - minSize);
+            bar.style.width = blockSize + 'px';
+            bar.style.height = blockSize + 'px';
+            bar.style.fontSize = (blockSize / 45) * 0.9 + 'em';
+            
+            // Display number inside block
+            bar.textContent = value;
             
             // Apply styling based on state
             if (this.sortedIndices.includes(index)) {
@@ -289,7 +299,7 @@ class Visualizer {
                 bar.classList.add('comparing');
             }
             
-            bar.title = value;
+            bar.title = 'Value: ' + value;
             this.container.appendChild(bar);
         });
     }
