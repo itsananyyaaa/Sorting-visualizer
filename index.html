@@ -14,6 +14,11 @@
         <span>🌙</span>
     </button>
 
+    <!-- Sound Toggle Button -->
+    <button id="soundToggle" class="sound-toggle" title="Toggle sound effects" aria-label="Toggle sound">
+        <span>🔕</span>
+    </button>
+
     <!-- Hero Header -->
     <header class="header" role="banner">
         <div class="header-content">
@@ -36,6 +41,11 @@
                     <button class="algo-btn active" data-algo="bubble" role="radio" aria-checked="true">Bubble</button>
                     <button class="algo-btn" data-algo="selection" role="radio" aria-checked="false">Selection</button>
                     <button class="algo-btn" data-algo="insertion" role="radio" aria-checked="false">Insertion</button>
+                    <button class="algo-btn" data-algo="merge" role="radio" aria-checked="false">Merge</button>
+                    <button class="algo-btn" data-algo="quick" role="radio" aria-checked="false">Quick</button>
+                </div>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="suggestBtn" class="btn btn-outline" title="Get AI suggestion">💡 Suggest</button>
                 </div>
                 <p class="algorithm-description" id="algorithmDesc" aria-live="polite">
                     Select an algorithm to see its description here.
@@ -95,46 +105,107 @@
                 <button id="applyBtn" class="btn btn-outline" aria-label="Apply custom array">Apply</button>
                 <button id="randomBtn" class="btn btn-outline" aria-label="Generate random array">🔀 Random</button>
             </section>
+
+            <!-- Mode Selection -->
+            <section class="control-section">
+                <h2>Mode</h2>
+                <select id="modeSelect" class="custom-select" aria-label="Select visualization mode">
+                    <option value="normal">Normal View</option>
+                    <option value="comparison">Comparison Mode</option>
+                    <option value="gamified">Gamified Mode</option>
+                    <option value="benchmark">Benchmark Mode</option>
+                </select>
+            </section>
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-content" role="main">
-            <!-- Visualization Area -->
-            <section class="visualization-section">
-                <div class="section-header">
-                    <h2>Visualization</h2>
-                </div>
-                <div class="visualization-container" id="visualization" role="presentation" aria-label="Sorting visualization area">
-                    <!-- Array elements will be rendered here -->
-                </div>
-            </section>
-
-            <!-- Info Grid -->
-            <div class="info-grid">
-                <!-- Step Explanation Panel -->
-                <section class="info-panel">
-                    <h3>Step Explanation</h3>
-                    <div class="explanation-content" id="explanation" aria-live="polite" aria-label="Current step explanation">
-                        <p>Ready to sort! Select an algorithm and click Play.</p>
+            <!-- Normal Mode Container -->
+            <div id="normalMode" class="mode-container">
+                <!-- Visualization Area -->
+                <section class="visualization-section">
+                    <div class="section-header">
+                        <h2>Visualization</h2>
+                    </div>
+                    <div class="visualization-container" id="visualization" role="presentation" aria-label="Sorting visualization area">
+                        <!-- Array elements will be rendered here -->
                     </div>
                 </section>
 
-                <!-- Complexity Metrics Panel -->
-                <section class="info-panel">
-                    <h3>Complexity Metrics</h3>
-                    <div class="metrics-content" id="metricsContent" aria-label="Algorithm complexity information">
-                        <!-- Complexity info will be inserted here -->
+                <!-- Info Grid -->
+                <div class="info-grid">
+                    <!-- Step Explanation Panel -->
+                    <section class="info-panel">
+                        <h3>Step Explanation</h3>
+                        <div class="explanation-content" id="explanation" aria-live="polite" aria-label="Current step explanation">
+                            <p>Ready to sort! Select an algorithm and click Play.</p>
+                        </div>
+                    </section>
+
+                    <!-- Complexity Metrics Panel -->
+                    <section class="info-panel">
+                        <h3>Complexity Metrics</h3>
+                        <div class="metrics-content" id="metricsContent" aria-label="Algorithm complexity information">
+                            <!-- Complexity info will be inserted here -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Code Trace Section -->
+                <section class="info-section">
+                    <h3>Code Trace</h3>
+                    <div class="code-trace" id="codeTrace" aria-live="polite" aria-label="Code execution trace">
+                        <p class="placeholder">Code execution trace will appear here...</p>
                     </div>
                 </section>
             </div>
 
-            <!-- Code Trace Section -->
-            <section class="info-section">
-                <h3>Code Trace</h3>
-                <div class="code-trace" id="codeTrace" aria-live="polite" aria-label="Code execution trace">
-                    <p class="placeholder">Code execution trace will appear here...</p>
-                </div>
-            </section>
+            <!-- Gamified Mode Container -->
+            <div id="gamifiedMode" class="mode-container" style="display: none;">
+                <section class="visualization-section">
+                    <div class="section-header">
+                        <h2>Gamified Mode - Sort by Clicking!</h2>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px;">
+                            Click on bars to swap them. Score: <span id="gameScore">0</span> | Timer: <span id="gameTimer">0s</span>
+                        </div>
+                    </div>
+                    <div class="visualization-container" id="gameViz" role="presentation" aria-label="Interactive game visualization">
+                        <!-- Game elements -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Benchmark Mode Container -->
+            <div id="benchmarkMode" class="mode-container" style="display: none;">
+                <section class="visualization-section">
+                    <div class="section-header">
+                        <h2>Benchmark Mode - Performance Comparison</h2>
+                        <button id="runBenchmarkBtn" class="btn btn-primary" style="margin-top: 10px;">▶ Run Benchmark</button>
+                    </div>
+                    <canvas id="benchmarkCanvas" width="800" height="400" style="border: 1px solid var(--border); border-radius: 8px; margin-top: 20px;"></canvas>
+                </section>
+            </div>
+
+            <!-- Comparison Mode Container -->
+            <div id="comparisonMode" class="mode-container comparison-grid" style="display: none;">
+                <section class="visualization-section">
+                    <h3>Algorithm Comparison</h3>
+                    <div class="comparison-pair">
+                        <div>
+                            <h4>Algorithm 1</h4>
+                            <div class="visualization-container" id="comparisonViz1" role="presentation" aria-label="First algorithm visualization">
+                                <!-- First algorithm visualization -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Algorithm 2</h4>
+                            <div class="visualization-container" id="comparisonViz2" role="presentation" aria-label="Second algorithm visualization">
+                                <!-- Second algorithm visualization -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 
