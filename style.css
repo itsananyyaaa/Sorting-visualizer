@@ -456,6 +456,44 @@ body.light-mode .visualization-container {
     opacity: 0.8;
 }
 
+/* Step Details Section */
+.step-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 8px;
+}
+
+.step-description {
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: var(--text-dark);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+body.light-mode .step-description {
+    color: var(--text-light);
+}
+
+.step-action,
+.step-array {
+    font-size: 0.85em;
+    padding: 8px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 6px;
+    word-break: break-all;
+}
+
+.action-type,
+.array-state {
+    color: var(--secondary-color);
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
 /* Comparison Mode */
 .comparison-mode,
 .gamify-mode,

@@ -4,6 +4,43 @@
 // ============================================================================
 
 // ============================================================================
+// MODULE: Step Tracker for Detailed Explanations
+// ============================================================================
+
+class StepTracker {
+    constructor() {
+        this.steps = [];
+        this.currentStep = 0;
+    }
+
+    addStep(array, description, action = 'compare') {
+        this.steps.push({
+            array: [...array],
+            description: description,
+            action: action,
+            stepNumber: this.steps.length + 1
+        });
+    }
+
+    getStep(index) {
+        return this.steps[index] || null;
+    }
+
+    getAllSteps() {
+        return this.steps;
+    }
+
+    reset() {
+        this.steps = [];
+        this.currentStep = 0;
+    }
+
+    getTotalSteps() {
+        return this.steps.length;
+    }
+}
+
+// ============================================================================
 // MODULE: Sorting Algorithms
 // ============================================================================
 
@@ -12,12 +49,19 @@ class SortingAlgorithms {
      * Bubble Sort - O(n²) average and worst case
      * Simple comparison-based algorithm
      */
-    static async bubbleSort(arr, visualizer) {
+    static async bubbleSort(arr, visualizer, stepTracker = null) {
         const n = arr.length;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n - i - 1; j++) {
                 visualizer.compare(j, j + 1);
-                if (arr[j] > arr[j + 1]) {
+                const shouldSwap = arr[j] > arr[j + 1];
+                
+                if (stepTracker) {
+                    const desc = `Comparing ${arr[j]} and ${arr[j + 1]} → ${shouldSwap ? 'swapping' : 'no swap'}`;
+                    stepTracker.addStep(arr, desc, shouldSwap ? 'swap' : 'compare');
+                }
+                
+                if (shouldSwap) {
                     [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
                     visualizer.swap(j, j + 1);
                 }
@@ -32,20 +76,31 @@ class SortingAlgorithms {
      * Selection Sort - O(n²) average and worst case
      * Finds minimum element and places it at the beginning
      */
-    static async selectionSort(arr, visualizer) {
+    static async selectionSort(arr, visualizer, stepTracker = null) {
         const n = arr.length;
         for (let i = 0; i < n - 1; i++) {
             let minIdx = i;
+            
+            if (stepTracker) {
+                stepTracker.addStep(arr, `Finding minimum from unsorted part (starting at index ${i})`);
+            }
+            
             for (let j = i + 1; j < n; j++) {
                 visualizer.compare(minIdx, j);
                 if (arr[j] < arr[minIdx]) {
                     minIdx = j;
+                    if (stepTracker) {
+                        stepTracker.addStep(arr, `Found new minimum: ${arr[minIdx]} at index ${minIdx}`);
+                    }
                 }
                 await visualizer.wait();
             }
             if (minIdx !== i) {
                 [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
                 visualizer.swap(i, minIdx);
+                if (stepTracker) {
+                    stepTracker.addStep(arr, `Swapped minimum ${arr[i]} to position ${i}`, 'swap');
+                }
             }
             visualizer.markSorted(i);
         }
@@ -56,19 +111,34 @@ class SortingAlgorithms {
      * Insertion Sort - O(n²) average and worst case
      * Builds sorted array one item at a time
      */
-    static async insertionSort(arr, visualizer) {
+    static async insertionSort(arr, visualizer, stepTracker = null) {
         const n = arr.length;
         for (let i = 1; i < n; i++) {
             let key = arr[i];
             let j = i - 1;
+            
+            if (stepTracker) {
+                stepTracker.addStep(arr, `Inserting element ${key} into sorted portion`);
+            }
+            
             while (j >= 0 && arr[j] > key) {
                 visualizer.compare(j, i);
                 arr[j + 1] = arr[j];
                 visualizer.swap(j + 1, j);
+                
+                if (stepTracker) {
+                    stepTracker.addStep(arr, `Shifting ${arr[j]} right to make space for ${key}`, 'swap');
+                }
+                
                 j--;
                 await visualizer.wait();
             }
             arr[j + 1] = key;
+            
+            if (stepTracker) {
+                stepTracker.addStep(arr, `Placed ${key} at position ${j + 1}`, 'insert');
+            }
+            
             visualizer.markSortedRange(0, i);
         }
         visualizer.markAllSorted();
@@ -443,6 +513,8 @@ class AppState {
         this.mode = 'visualize';
         this.isSorting = false;
         this.isPaused = false;
+        this.stepTracker = new StepTracker();
+        this.currentStepIndex = 0;
         this.visualizers = {
             main: new Visualizer('canvas-container'),
             compare1: null,
@@ -458,6 +530,8 @@ class AppState {
         }
         this.array = arr;
         this.originalArray = [...arr];
+        this.stepTracker.reset();
+        this.currentStepIndex = 0;
         return arr;
     }
 
@@ -471,6 +545,8 @@ class AppState {
             if (arr.length < 2) throw new Error('Need at least 2 elements');
             this.array = arr;
             this.originalArray = [...arr];
+            this.stepTracker.reset();
+            this.currentStepIndex = 0;
             return arr;
         } catch (e) {
             alert('Invalid input! Use comma-separated numbers between 1-100');
@@ -480,6 +556,8 @@ class AppState {
 
     reset() {
         this.array = [...this.originalArray];
+        this.stepTracker.reset();
+        this.currentStepIndex = 0;
         this.visualizers.main.initializeArray(this.array);
     }
 }
@@ -545,6 +623,16 @@ function updateMetrics() {
     document.getElementById('swaps').textContent = metrics.swaps;
     document.getElementById('elapsedTime').textContent = metrics.time + 'ms';
     document.getElementById('stepCounter').textContent = appState.visualizers.main.currentStep;
+}
+
+function updateStepDetails() {
+    const step = appState.stepTracker.getStep(appState.currentStepIndex);
+    if (step) {
+        document.querySelector('.step-description').textContent = step.description;
+        document.querySelector('.action-type').textContent = step.action;
+        document.querySelector('.array-state').textContent = '[' + step.array.join(', ') + ']';
+        document.getElementById('totalSteps').textContent = appState.stepTracker.getTotalSteps();
+    }
 }
 
 function updateAlgorithmInfo() {
@@ -637,10 +725,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortFunc = SortingAlgorithms[algoName[0].toUpperCase() + algoName.slice(1)];
             
             if (sortFunc) {
-                await sortFunc.call(SortingAlgorithms, appState.array, appState.visualizers.main);
+                await sortFunc.call(SortingAlgorithms, appState.array, appState.visualizers.main, appState.stepTracker);
             }
 
-            setExplanation(`✓ Sorting complete! Total steps: ${appState.visualizers.main.currentStep}`);
+            updateStepDetails();
+            setExplanation(`✓ Sorting complete! Total steps: ${appState.stepTracker.getTotalSteps()}`);
         } catch (e) {
             console.error('Sort error:', e);
         }
