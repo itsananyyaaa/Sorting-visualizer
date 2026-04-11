@@ -1,14 +1,6 @@
 // ============================================================================
-// SORTING ALGORITHM VISUALIZER - COMPLETE ENHANCED VERSION
+// SORTING ALGORITHM VISUALIZER - STEP-BASED ARCHITECTURE
 // ============================================================================
-
-// Audio context for sound effects
-let audioContext;
-try {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-} catch (e) {
-    audioContext = null;
-}
 
 // ============================================================================
 // ALGORITHM DEFINITIONS
@@ -17,31 +9,33 @@ try {
 const ALGORITHMS = {
     bubble: {
         name: 'Bubble Sort',
-        description: 'Repeatedly steps through the list, compares adjacent elements and swaps them if they\'re in the wrong order.',
+        description: 'Repeatedly steps through the list, compares adjacent elements and swaps them if they\'re in the wrong order. Simple to understand but inefficient for large datasets.',
         complexity: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Stable' },
         pseudoCode: `for i = 0 to n-1:
   for j = 0 to n-i-2:
     if arr[j] > arr[j+1]:
       swap(arr[j], arr[j+1])`,
+        explanation: 'Bubble Sort repeatedly swaps adjacent elements if they are in the wrong order. Like bubbles rising to the surface, larger elements "bubble" to the end of the array with each pass.',
         difficulty: 'Easy',
-        useCases: 'Educational, small datasets'
+        useCases: 'Educational purposes, small datasets'
     },
     selection: {
         name: 'Selection Sort',
-        description: 'Divides array into sorted and unsorted portions. Finds minimum from unsorted part and places at beginning.',
+        description: 'Divides array into sorted and unsorted portions. Repeatedly finds the minimum element from unsorted part and places it at the beginning.',
         complexity: { best: 'O(n²)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Unstable' },
         pseudoCode: `for i = 0 to n-1:
   min_idx = i
-  for j = i+1 to n:
+  for j = i+1 to n-1:
     if arr[j] < arr[min_idx]:
       min_idx = j
   swap(arr[i], arr[min_idx])`,
+        explanation: 'Selection Sort divides the input into a sorted portion (initially empty) and an unsorted portion. It repeatedly selects the smallest element from the unsorted portion and moves it to the sorted portion.',
         difficulty: 'Easy',
-        useCases: 'Limited memory'
+        useCases: 'When memory is limited'
     },
     insertion: {
         name: 'Insertion Sort',
-        description: 'Builds the sorted array one item at a time by inserting elements into correct position.',
+        description: 'Builds the sorted array one item at a time by inserting elements into their correct position. Efficient for small datasets.',
         complexity: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Stable' },
         pseudoCode: `for i = 1 to n-1:
   key = arr[i]
@@ -50,12 +44,13 @@ const ALGORITHMS = {
     arr[j+1] = arr[j]
     j = j - 1
   arr[j+1] = key`,
+        explanation: 'Insertion Sort builds the sorted array one item at a time. It iterates through an input array, and for each element, finds the place it belongs in the sorted list and inserts it there.',
         difficulty: 'Easy',
-        useCases: 'Nearly sorted data'
+        useCases: 'Nearly sorted data, small arrays'
     },
     merge: {
         name: 'Merge Sort',
-        description: 'Divide and conquer. Divides array into halves, sorts them, and merges back together.',
+        description: 'Divide and conquer algorithm. Divides array into halves, recursively sorts them, and merges back together. Guaranteed O(n log n).',
         complexity: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', stability: 'Stable' },
         pseudoCode: `mergeSort(arr, left, right):
   if left < right:
@@ -63,20 +58,22 @@ const ALGORITHMS = {
     mergeSort(arr, left, mid)
     mergeSort(arr, mid+1, right)
     merge(arr, left, mid, right)`,
+        explanation: 'Merge Sort uses the divide-and-conquer paradigm. It divides the array in half recursively until single elements remain, then merges them back together in sorted order.',
         difficulty: 'Medium',
-        useCases: 'Large datasets'
+        useCases: 'Large datasets, when O(n log n) is required'
     },
     quick: {
         name: 'Quick Sort',
-        description: 'Divide and conquer using pivot. Highly efficient on average for general-purpose sorting.',
+        description: 'Divide and conquer using a pivot element. Highly efficient on average. Most widely used sorting algorithm in practice.',
         complexity: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n²)', space: 'O(log n)', stability: 'Unstable' },
         pseudoCode: `quickSort(arr, low, high):
   if low < high:
     pi = partition(arr, low, high)
     quickSort(arr, low, pi-1)
     quickSort(arr, pi+1, high)`,
+        explanation: 'Quick Sort divides the array around a pivot element. Elements smaller than the pivot are placed before it, and larger elements after it. This process is repeated recursively.',
         difficulty: 'Medium',
-        useCases: 'General-purpose sorting'
+        useCases: 'General-purpose sorting, large datasets'
     }
 };
 
@@ -86,50 +83,660 @@ const ALGORITHMS = {
 
 const appState = {
     currentAlgorithm: 'bubble',
-    arraySize: 30,
-    speed: 50,
+    arraySize: 20,
+    speed: 300, // milliseconds
     array: [],
-    originalArray: [],
     isSorting: false,
     isPaused: false,
-    sortingStep: 0,
-    totalSteps: 0,
+    steps: [],
+    currentStep: 0,
+    animationId: null,
     comparisons: 0,
-    swaps: 0,
-    startTime: 0,
-    executionTime: 0,
-    soundEnabled: false
+    swaps: 0
 };
 
 // ============================================================================
-// DOM ELEMENTS
+// DOM REFERENCES
 // ============================================================================
 
-const DOM = {
-    themeToggle: null,
-    soundToggle: null,
-    algoButtons: null,
-    sizeSlider: null,
-    speedSlider: null,
-    playBtn: null,
-    pauseBtn: null,
-    resetBtn: null,
-    customInput: null,
-    applyBtn: null,
-    randomBtn: null,
-    suggestBtn: null,
-    visualization: null,
-    explanation: null,
-    codeTrace: null,
-    progressFill: null,
-    progressText: null,
-    pseudoCode: null,
-    algorithmDesc: null,
-    metricsContent: null,
-    sizeValue: null,
-    speedValue: null,
-    modeSelect: null
-};
+let DOM = {};
+
+function initializeDOM() {
+    DOM = {
+        // Algorithm Section
+        algorithmSelect: document.getElementById('algorithmSelect'),
+        algoDetailsSection: document.getElementById('algoDetailsSection'),
+        algoInfo: document.getElementById('algoInfo'),
+
+        // Array Input Section
+        customInput: document.getElementById('customInput'),
+        customError: document.getElementById('customError'),
+        applyBtn: document.getElementById('applyBtn'),
+        randomBtn: document.getElementById('randomBtn'),
+
+        // Visualization Section
+        stepExplanation: document.getElementById('stepExplanation'),
+        arrayVisualization: document.getElementById('arrayVisualization'),
+        progressFill: document.getElementById('progressFill'),
+
+        // Playback Controls
+        playBtn: document.getElementById('playBtn'),
+        pauseBtn: document.getElementById('pauseBtn'),
+        nextBtn: document.getElementById('nextBtn'),
+        prevBtn: document.getElementById('prevBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        speedSlider: document.getElementById('speedSlider'),
+        speedValue: document.getElementById('speedValue'),
+        sizeSlider: document.getElementById('sizeSlider'),
+        sizeValue: document.getElementById('sizeValue'),
+
+        // Statistics
+        stepCount: document.getElementById('stepCount'),
+        comparisonCount: document.getElementById('comparisonCount'),
+        swapCount: document.getElementById('swapCount'),
+
+        // Details Section
+        detailsSection: document.getElementById('detailsSection'),
+        algoExplanation: document.getElementById('algoExplanation'),
+        pseudoCode: document.getElementById('pseudoCode'),
+        codeTrace: document.getElementById('codeTrace')
+    };
+}
+
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+
+function attachEventListeners() {
+    // Algorithm selection
+    DOM.algorithmSelect.addEventListener('change', handleAlgorithmChange);
+
+    // Array input
+    DOM.customInput.addEventListener('input', () => {
+        DOM.customError.style.display = 'none';
+    });
+    DOM.applyBtn.addEventListener('click', applyCustomArray);
+    DOM.randomBtn.addEventListener('click', generateRandomArray);
+
+    // Playback controls
+    DOM.playBtn.addEventListener('click', play);
+    DOM.pauseBtn.addEventListener('click', pause);
+    DOM.nextBtn.addEventListener('click', nextStep);
+    DOM.prevBtn.addEventListener('click', prevStep);
+    DOM.resetBtn.addEventListener('click', reset);
+
+    // Sliders
+    DOM.speedSlider.addEventListener('input', updateSpeedDisplay);
+    DOM.sizeSlider.addEventListener('input', updateSizeDisplay);
+}
+
+// ============================================================================
+// ALGORITHM SELECTION
+// ============================================================================
+
+function handleAlgorithmChange(e) {
+    const algo = e.target.value;
+    if (!algo) return;
+
+    appState.currentAlgorithm = algo;
+    displayAlgorithmInfo(algo);
+    reset();
+    generateRandomArray();
+}
+
+function displayAlgorithmInfo(algoKey) {
+    const algo = ALGORITHMS[algoKey];
+    if (!algo) return;
+
+    let html = `
+        <h4>Overview</h4>
+        <p>${algo.description}</p>
+        
+        <h4>Complexity Analysis</h4>
+        <p><strong>Best:</strong> ${algo.complexity.best} | <strong>Average:</strong> ${algo.complexity.average} | <strong>Worst:</strong> ${algo.complexity.worst}</p>
+        <p><strong>Space:</strong> ${algo.complexity.space} | <strong>Stability:</strong> ${algo.complexity.stability}</p>
+        
+        <h4>Difficulty</h4>
+        <p>${algo.difficulty}</p>
+        
+        <h4>Use Cases</h4>
+        <p>${algo.useCases}</p>
+    `;
+
+    DOM.algoInfo.innerHTML = html;
+    DOM.algoDetailsSection.style.display = 'block';
+    DOM.detailsSection.style.display = 'block';
+
+    DOM.algoExplanation.innerHTML = `<p>${algo.explanation}</p>`;
+    DOM.pseudoCode.textContent = algo.pseudoCode;
+}
+
+// ============================================================================
+// ARRAY INPUT & GENERATION
+// ============================================================================
+
+function parseCustomArray(input) {
+    const trimmed = input.trim();
+    if (!trimmed) {
+        throw new Error('Array cannot be empty');
+    }
+
+    const parts = trimmed.split(',');
+    const numbers = [];
+
+    for (let i = 0; i < parts.length; i++) {
+        const num = Number(parts[i].trim());
+        if (isNaN(num)) {
+            throw new Error(`Invalid number at position ${i + 1}: "${parts[i].trim()}"`);
+        }
+        numbers.push(num);
+    }
+
+    if (numbers.length === 0) {
+        throw new Error('Array cannot be empty');
+    }
+
+    return numbers;
+}
+
+function showCustomError(message) {
+    DOM.customError.textContent = message;
+    DOM.customError.style.display = 'block';
+}
+
+function applyCustomArray() {
+    try {
+        const input = DOM.customInput.value;
+        appState.array = parseCustomArray(input);
+        appState.arraySize = appState.array.length;
+        DOM.sizeSlider.value = appState.arraySize;
+        DOM.sizeValue.textContent = appState.arraySize;
+        DOM.customError.style.display = 'none';
+        reset();
+        generateSteps();
+        updateUI(0);
+    } catch (error) {
+        showCustomError(error.message);
+    }
+}
+
+function generateRandomArray() {
+    const size = parseInt(DOM.sizeSlider.value);
+    appState.arraySize = size;
+    appState.array = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+    DOM.customInput.value = appState.array.join(', ');
+    DOM.customError.style.display = 'none';
+    reset();
+    generateSteps();
+    updateUI(0);
+}
+
+// ============================================================================
+// STEP GENERATION FOR SORTING ALGORITHMS
+// ============================================================================
+
+function generateSteps() {
+    const algo = appState.currentAlgorithm;
+    appState.steps = [];
+
+    // Create a copy to sort
+    const arr = [...appState.array];
+    appState.comparisons = 0;
+    appState.swaps = 0;
+
+    // Add initial step
+    appState.steps.push({
+        array: [...arr],
+        action: 'start',
+        indices: [],
+        description: 'Sorting started'
+    });
+
+    // Generate steps based on algorithm
+    switch (algo) {
+        case 'bubble':
+            generateBubbleSteps(arr);
+            break;
+        case 'selection':
+            generateSelectionSteps(arr);
+            break;
+        case 'insertion':
+            generateInsertionSteps(arr);
+            break;
+        case 'merge':
+            generateMergeSteps(arr);
+            break;
+        case 'quick':
+            generateQuickSteps(arr);
+            break;
+    }
+
+    // Add final step
+    appState.steps.push({
+        array: [...arr],
+        action: 'complete',
+        indices: [],
+        description: 'Sorting complete!'
+    });
+}
+
+function generateBubbleSteps(arr) {
+    const n = arr.length;
+
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            appState.comparisons++;
+
+            // Compare step
+            appState.steps.push({
+                array: [...arr],
+                action: 'compare',
+                indices: [j, j + 1],
+                description: `Comparing arr[${j}]=${arr[j]} and arr[${j + 1}]=${arr[j + 1]}`
+            });
+
+            if (arr[j] > arr[j + 1]) {
+                appState.swaps++;
+
+                // Swap step
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                appState.steps.push({
+                    array: [...arr],
+                    action: 'swap',
+                    indices: [j, j + 1],
+                    description: `Swapped arr[${j}] and arr[${j + 1}]`
+                });
+            }
+        }
+    }
+}
+
+function generateSelectionSteps(arr) {
+    const n = arr.length;
+
+    for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+
+        for (let j = i + 1; j < n; j++) {
+            appState.comparisons++;
+
+            appState.steps.push({
+                array: [...arr],
+                action: 'compare',
+                indices: [minIdx, j],
+                description: `Comparing arr[${minIdx}]=${arr[minIdx]} and arr[${j}]=${arr[j]}`
+            });
+
+            if (arr[j] < arr[minIdx]) {
+                minIdx = j;
+            }
+        }
+
+        if (minIdx !== i) {
+            appState.swaps++;
+            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+
+            appState.steps.push({
+                array: [...arr],
+                action: 'swap',
+                indices: [i, minIdx],
+                description: `Swapped arr[${i}] and arr[${minIdx}]`
+            });
+        }
+    }
+}
+
+function generateInsertionSteps(arr) {
+    const n = arr.length;
+
+    for (let i = 1; i < n; i++) {
+        const key = arr[i];
+        let j = i - 1;
+
+        appState.steps.push({
+            array: [...arr],
+            action: 'compare',
+            indices: [i],
+            description: `Inserting arr[${i}]=${key}`
+        });
+
+        while (j >= 0 && arr[j] > key) {
+            appState.comparisons++;
+            appState.swaps++;
+
+            arr[j + 1] = arr[j];
+            appState.steps.push({
+                array: [...arr],
+                action: 'swap',
+                indices: [j, j + 1],
+                description: `Shifting arr[${j}]=${arr[j]} to right`
+            });
+
+            j--;
+        }
+
+        arr[j + 1] = key;
+    }
+}
+
+function generateMergeSteps(arr) {
+    // Simplified merge sort visualization
+    mergeSort(arr, 0, arr.length - 1);
+
+    function mergeSort(arr, left, right) {
+        if (left < right) {
+            const mid = Math.floor((left + right) / 2);
+            mergeSort(arr, left, mid);
+            mergeSort(arr, mid + 1, right);
+            merge(arr, left, mid, right);
+        }
+    }
+
+    function merge(arr, left, mid, right) {
+        const leftArr = arr.slice(left, mid + 1);
+        const rightArr = arr.slice(mid + 1, right + 1);
+        let i = 0, j = 0, k = left;
+
+        while (i < leftArr.length && j < rightArr.length) {
+            appState.comparisons++;
+
+            appState.steps.push({
+                array: [...arr],
+                action: 'compare',
+                indices: [left + i, mid + 1 + j],
+                description: `Comparing ${leftArr[i]} and ${rightArr[j]}`
+            });
+
+            if (leftArr[i] <= rightArr[j]) {
+                arr[k++] = leftArr[i++];
+            } else {
+                arr[k++] = rightArr[j++];
+            }
+
+            appState.swaps++;
+            appState.steps.push({
+                array: [...arr],
+                action: 'swap',
+                indices: [k - 1],
+                description: `Placed element at position ${k - 1}`
+            });
+        }
+
+        while (i < leftArr.length) {
+            arr[k++] = leftArr[i++];
+        }
+        while (j < rightArr.length) {
+            arr[k++] = rightArr[j++];
+        }
+    }
+}
+
+function generateQuickSteps(arr) {
+    quickSort(arr, 0, arr.length - 1);
+
+    function quickSort(arr, low, high) {
+        if (low < high) {
+            const pi = partition(arr, low, high);
+            quickSort(arr, low, pi - 1);
+            quickSort(arr, pi + 1, high);
+        }
+    }
+
+    function partition(arr, low, high) {
+        const pivot = arr[high];
+        let i = low - 1;
+
+        for (let j = low; j < high; j++) {
+            appState.comparisons++;
+
+            appState.steps.push({
+                array: [...arr],
+                action: 'compare',
+                indices: [j, high],
+                description: `Comparing ${arr[j]} with pivot ${pivot}`
+            });
+
+            if (arr[j] < pivot) {
+                i++;
+                appState.swaps++;
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+
+                appState.steps.push({
+                    array: [...arr],
+                    action: 'swap',
+                    indices: [i, j],
+                    description: `Swapped arr[${i}] and arr[${j}]`
+                });
+            }
+        }
+
+        appState.swaps++;
+        [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+        appState.steps.push({
+            array: [...arr],
+            action: 'swap',
+            indices: [i + 1, high],
+            description: `Placed pivot at position ${i + 1}`
+        });
+
+        return i + 1;
+    }
+}
+
+// ============================================================================
+// VISUALIZATION
+// ============================================================================
+
+function updateUI(stepIndex) {
+    // Validate step index
+    if (stepIndex < 0) stepIndex = 0;
+    if (stepIndex >= appState.steps.length) stepIndex = appState.steps.length - 1;
+
+    appState.currentStep = stepIndex;
+    const step = appState.steps[stepIndex];
+
+    // Update visualization
+    renderVisualization(step);
+
+    // Update step explanation
+    DOM.stepExplanation.innerHTML = `<p>${step.description}</p>`;
+
+    // Update progress bar
+    const progress = (stepIndex / (appState.steps.length - 1)) * 100;
+    DOM.progressFill.style.width = progress + '%';
+
+    // Update statistics
+    DOM.stepCount.textContent = `${stepIndex} / ${appState.steps.length - 1}`;
+    DOM.comparisonCount.textContent = appState.comparisons;
+    DOM.swapCount.textContent = appState.swaps;
+
+    // Update code trace with current step details
+    updateCodeTrace(stepIndex, step);
+
+    // Update button states
+    DOM.nextBtn.disabled = (stepIndex >= appState.steps.length - 1) || appState.isSorting;
+    DOM.prevBtn.disabled = (stepIndex <= 0) || appState.isSorting;
+    DOM.playBtn.disabled = appState.isSorting || stepIndex >= appState.steps.length - 1;
+    DOM.pauseBtn.disabled = !appState.isSorting;
+}
+
+function renderVisualization(step) {
+    DOM.arrayVisualization.innerHTML = '';
+
+    const maxValue = Math.max(...step.array) || 1;
+    const MAX_BAR_HEIGHT = 200; // px
+
+    step.array.forEach((value, index) => {
+        const item = document.createElement('div');
+        item.className = 'array-item';
+
+        // Bar fill — height proportional to value
+        const fill = document.createElement('div');
+        fill.className = 'bar-fill';
+        const barHeight = Math.max(6, Math.round((value / maxValue) * MAX_BAR_HEIGHT));
+        fill.style.height = barHeight + 'px';
+
+        // Number label below bar
+        const label = document.createElement('span');
+        label.className = 'bar-label';
+        label.textContent = value;
+
+        item.appendChild(fill);
+        item.appendChild(label);
+
+        // Determine state
+        const isSorted = checkIfSorted(step.array, index);
+        if (isSorted) {
+            item.classList.add('sorted');
+        } else if (step.indices.includes(index)) {
+            if (step.action === 'compare') {
+                item.classList.add('comparing');
+            } else if (step.action === 'swap') {
+                item.classList.add('swapping');
+            }
+        }
+
+        DOM.arrayVisualization.appendChild(item);
+    });
+}
+
+function checkIfSorted(arr, upToIndex) {
+    // Check if all elements from upToIndex onwards are in their sorted position
+    for (let i = upToIndex; i < arr.length; i++) {
+        for (let j = i + 1; j < arr.length; j++) {
+            if (arr[i] > arr[j]) return false;
+        }
+    }
+    return true;
+}
+
+function updateCodeTrace(stepIndex, step) {
+    if (!step) {
+        DOM.codeTrace.innerHTML = '<p class="code-placeholder">No steps yet</p>';
+        return;
+    }
+
+    const traceHTML = `
+        <div class="trace-entry">
+            <div class="trace-header">Step ${stepIndex + 1}: ${step.action.toUpperCase()}</div>
+            <div class="trace-content">
+                <p><strong>Action:</strong> ${step.description}</p>
+                <p><strong>Current Array:</strong> [${step.array.join(', ')}]</p>
+                ${step.indices.length > 0 ? `<p><strong>Affected Indices:</strong> ${step.indices.join(', ')}</p>` : ''}
+                <p><strong>Comparisons so far:</strong> ${appState.comparisons}</p>
+                <p><strong>Swaps so far:</strong> ${appState.swaps}</p>
+            </div>
+        </div>
+    `;
+    DOM.codeTrace.innerHTML = traceHTML;
+}
+
+// ============================================================================
+// PLAYBACK CONTROLS
+// ============================================================================
+
+function play() {
+    if (appState.currentStep >= appState.steps.length - 1) return;
+
+    appState.isSorting = true;
+    appState.isPaused = false;
+    DOM.playBtn.disabled = true;
+    DOM.pauseBtn.disabled = false;
+
+    function animateStep() {
+        if (appState.isPaused || appState.currentStep >= appState.steps.length - 1) {
+            appState.isSorting = false;
+            updateUI(appState.currentStep);
+            return;
+        }
+
+        appState.currentStep++;
+        updateUI(appState.currentStep);
+
+        if (appState.currentStep < appState.steps.length - 1) {
+            appState.animationId = setTimeout(animateStep, 1000 - appState.speed);
+        } else {
+            appState.isSorting = false;
+            updateUI(appState.currentStep);
+        }
+    }
+
+    animateStep();
+}
+
+function pause() {
+    appState.isPaused = true;
+    if (appState.animationId) clearTimeout(appState.animationId);
+
+    DOM.pauseBtn.disabled = true;
+    DOM.playBtn.disabled = false;
+    DOM.nextBtn.disabled = false;
+    DOM.prevBtn.disabled = appState.currentStep <= 0;
+}
+
+function nextStep() {
+    if (appState.currentStep < appState.steps.length - 1) {
+        updateUI(appState.currentStep + 1);
+    }
+}
+
+function prevStep() {
+    if (appState.currentStep > 0) {
+        updateUI(appState.currentStep - 1);
+    }
+}
+
+function reset() {
+    appState.isSorting = false;
+    appState.isPaused = false;
+    appState.currentStep = 0;
+
+    if (appState.animationId) clearTimeout(appState.animationId);
+
+    DOM.playBtn.disabled = true;
+    DOM.pauseBtn.disabled = true;
+    DOM.nextBtn.disabled = true;
+    DOM.prevBtn.disabled = true;
+
+    appState.comparisons = 0;
+    appState.swaps = 0;
+    appState.steps = [];
+
+    DOM.stepExplanation.innerHTML = '<p>Select an algorithm and set an array to begin</p>';
+    DOM.arrayVisualization.innerHTML = '';
+    DOM.progressFill.style.width = '0%';
+    DOM.stepCount.textContent = '0 / 0';
+    DOM.comparisonCount.textContent = '0';
+    DOM.swapCount.textContent = '0';
+    DOM.codeTrace.innerHTML = '<p class="code-placeholder">Steps will appear here as the algorithm runs</p>';
+}
+
+// ============================================================================
+// SLIDER CONTROLS
+// ============================================================================
+
+function updateSpeedDisplay() {
+    const speed = parseInt(DOM.speedSlider.value);
+    appState.speed = speed;
+
+    let label = 'Very Slow';
+    if (speed > 800) label = 'Very Fast';
+    else if (speed > 600) label = 'Fast';
+    else if (speed > 400) label = 'Normal';
+    else if (speed > 200) label = 'Slow';
+
+    DOM.speedValue.textContent = label;
+}
+
+function updateSizeDisplay() {
+    const size = parseInt(DOM.sizeSlider.value);
+    DOM.sizeValue.textContent = size;
+    appState.arraySize = size;
+
+    if (!appState.isSorting) {
+        generateRandomArray();
+    }
+}
 
 // ============================================================================
 // INITIALIZATION
@@ -137,729 +744,8 @@ const DOM = {
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeDOM();
-    initializeEventListeners();
+    attachEventListeners();
+
+    // Generate initial random array
     generateRandomArray();
-    renderVisualization();
-    updateAlgorithmInfo();
-    loadPreferences();
 });
-
-function initializeDOM() {
-    DOM.themeToggle = document.getElementById('themeToggle');
-    DOM.soundToggle = document.getElementById('soundToggle');
-    DOM.algoButtons = document.querySelectorAll('.algo-btn');
-    DOM.sizeSlider = document.getElementById('sizeSlider');
-    DOM.speedSlider = document.getElementById('speedSlider');
-    DOM.playBtn = document.getElementById('playBtn');
-    DOM.pauseBtn = document.getElementById('pauseBtn');
-    DOM.resetBtn = document.getElementById('resetBtn');
-    DOM.customInput = document.getElementById('customInput');
-    DOM.applyBtn = document.getElementById('applyBtn');
-    DOM.randomBtn = document.getElementById('randomBtn');
-    DOM.suggestBtn = document.getElementById('suggestBtn');
-    DOM.visualization = document.getElementById('visualization');
-    DOM.explanation = document.getElementById('explanation');
-    DOM.codeTrace = document.getElementById('codeTrace');
-    DOM.progressFill = document.getElementById('progressFill');
-    DOM.progressText = document.getElementById('progressText');
-    DOM.pseudoCode = document.getElementById('codeContent');
-    DOM.algorithmDesc = document.getElementById('algorithmDesc');
-    DOM.metricsContent = document.getElementById('metricsContent');
-    DOM.sizeValue = document.getElementById('sizeValue');
-    DOM.speedValue = document.getElementById('speedValue');
-    DOM.modeSelect = document.getElementById('modeSelect');
-}
-
-function initializeEventListeners() {
-    DOM.themeToggle?.addEventListener('click', toggleTheme);
-    DOM.soundToggle?.addEventListener('click', toggleSound);
-    DOM.suggestBtn?.addEventListener('click', suggestAlgorithm);
-
-    DOM.algoButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (appState.isSorting) return;
-            DOM.algoButtons.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            appState.currentAlgorithm = e.target.dataset.algo;
-            resetSort();
-            updateAlgorithmInfo();
-        });
-    });
-
-    DOM.sizeSlider?.addEventListener('input', (e) => {
-        appState.arraySize = parseInt(e.target.value);
-        DOM.sizeValue.textContent = appState.arraySize;
-        generateRandomArray();
-    });
-
-    DOM.speedSlider?.addEventListener('input', (e) => {
-        appState.speed = parseInt(e.target.value);
-        const speedFactor = ((100 - e.target.value) / 50).toFixed(2);
-        DOM.speedValue.textContent = speedFactor + 'x';
-    });
-
-    DOM.playBtn?.addEventListener('click', startSort);
-    DOM.pauseBtn?.addEventListener('click', togglePause);
-    DOM.resetBtn?.addEventListener('click', resetSort);
-    DOM.applyBtn?.addEventListener('click', applyCustomArray);
-    DOM.randomBtn?.addEventListener('click', generateRandomArray);
-}
-
-// ============================================================================
-// THEME & PREFERENCES
-// ============================================================================
-
-function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-}
-
-function toggleSound() {
-    appState.soundEnabled = !appState.soundEnabled;
-    DOM.soundToggle?.classList.toggle('sound-enabled');
-    localStorage.setItem('sound', appState.soundEnabled ? 'enabled' : 'disabled');
-}
-
-function loadPreferences() {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-    if (localStorage.getItem('sound') === 'enabled') {
-        appState.soundEnabled = true;
-        DOM.soundToggle?.classList.add('sound-enabled');
-    }
-}
-
-// ============================================================================
-// SOUND EFFECTS
-// ============================================================================
-
-function playComparisonSound() {
-    if (!appState.soundEnabled || !audioContext) return;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    osc.frequency.value = 200;
-    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-    osc.start(audioContext.currentTime);
-    osc.stop(audioContext.currentTime + 0.05);
-}
-
-function playSwapSound() {
-    if (!appState.soundEnabled || !audioContext) return;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    osc.frequency.value = 400;
-    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-    osc.start(audioContext.currentTime);
-    osc.stop(audioContext.currentTime + 0.1);
-}
-
-function playCompleteSound() {
-    if (!appState.soundEnabled || !audioContext) return;
-    const notes = [523.25, 659.25, 783.99];
-    notes.forEach((freq, idx) => {
-        setTimeout(() => {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.3);
-        }, idx * 100);
-    });
-}
-
-// ============================================================================
-// ARRAY MANAGEMENT
-// ============================================================================
-
-function generateRandomArray() {
-    appState.array = Array.from({ length: appState.arraySize }, 
-        () => Math.floor(Math.random() * 100) + 1
-    );
-    appState.originalArray = [...appState.array];
-    resetSort();
-    renderVisualization();
-}
-
-function applyCustomArray() {
-    const input = DOM.customInput?.value.trim();
-    if (!input) {
-        alert('Please enter comma-separated numbers');
-        return;
-    }
-    
-    try {
-        appState.array = input.split(',').map(n => {
-            const num = parseInt(n.trim());
-            if (isNaN(num)) throw new Error('Invalid');
-            return Math.max(1, Math.min(100, num));
-        });
-        
-        appState.arraySize = appState.array.length;
-        appState.originalArray = [...appState.array];
-        DOM.sizeValue.textContent = appState.arraySize;
-        resetSort();
-        renderVisualization();
-    } catch (error) {
-        alert('Please enter valid numbers separated by commas');
-    }
-}
-
-// ============================================================================
-// VISUALIZATION & RENDERING
-// ============================================================================
-
-function renderVisualization() {
-    DOM.visualization.innerHTML = '';
-    
-    const maxValue = Math.max(...appState.array, 1);
-    const blockWidth = Math.max(30, 100 / appState.array.length);
-    
-    appState.array.forEach((value, idx) => {
-        const block = document.createElement('div');
-        block.className = 'array-block';
-        block.style.height = (value / maxValue * 100) + '%';
-        block.style.width = blockWidth + '%';
-        block.textContent = appState.arraySize <= 50 ? value : '';
-        block.id = `block-${idx}`;
-        DOM.visualization.appendChild(block);
-    });
-}
-
-function updateVisualizationBlock(index, state = 'default') {
-    const block = document.getElementById(`block-${index}`);
-    if (block) {
-        block.className = 'array-block';
-        if (state === 'comparing') block.classList.add('comparing');
-        else if (state === 'swapping') block.classList.add('swapping');
-        else if (state === 'sorted') block.classList.add('sorted');
-    }
-}
-
-function resetBlockStates() {
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.className = 'array-block';
-    });
-}
-
-// ============================================================================
-// ALGORITHM INFO & METRICS
-// ============================================================================
-
-function updateAlgorithmInfo() {
-    const algo = ALGORITHMS[appState.currentAlgorithm];
-    
-    DOM.algorithmDesc.innerHTML = `
-        <h3>${algo.name}</h3>
-        <p>${algo.description}</p>
-        <p style="margin-top: 8px; font-size: 0.9rem;"><strong>Difficulty:</strong> ${algo.difficulty} | <strong>Best For:</strong> ${algo.useCases}</p>
-    `;
-    
-    DOM.pseudoCode.textContent = algo.pseudoCode;
-    
-    DOM.metricsContent.innerHTML = `
-        <div class="metric-row"><span>Best:</span><span>${algo.complexity.best}</span></div>
-        <div class="metric-row"><span>Average:</span><span>${algo.complexity.average}</span></div>
-        <div class="metric-row"><span>Worst:</span><span>${algo.complexity.worst}</span></div>
-        <div class="metric-row"><span>Space:</span><span>${algo.complexity.space}</span></div>
-        <div class="metric-row"><span>Stability:</span><span>${algo.complexity.stability}</span></div>
-        <div class="metric-row"><span>Comparisons:</span><span id="comparisonCount">0</span></div>
-        <div class="metric-row"><span>Swaps:</span><span id="swapCount">0</span></div>
-        <div class="metric-row"><span>Time:</span><span id="executionTime">0ms</span></div>
-    `;
-}
-
-function updateMetrics() {
-    const compCount = document.getElementById('comparisonCount');
-    const swapCount = document.getElementById('swapCount');
-    const timeEl = document.getElementById('executionTime');
-    
-    if (compCount) compCount.textContent = appState.comparisons;
-    if (swapCount) swapCount.textContent = appState.swaps;
-    if (timeEl && appState.isSorting) {
-        appState.executionTime = Date.now() - appState.startTime;
-        timeEl.textContent = appState.executionTime + 'ms';
-    }
-}
-
-function updateExplanation(text) {
-    DOM.explanation.innerHTML = `<p>${text}</p>`;
-}
-
-function updateProgressBar() {
-    const progress = appState.totalSteps > 0 
-        ? (appState.sortingStep / appState.totalSteps * 100)
-        : 0;
-    DOM.progressFill.style.width = progress + '%';
-    DOM.progressText.textContent = Math.round(progress) + '%';
-}
-
-function updateCodeTrace(lines) {
-    DOM.codeTrace.innerHTML = lines
-        .map((line, idx) => `<code class="${line.current ? 'current' : ''}">${line.text}</code>`)
-        .join('');
-}
-
-function updateButtonStates() {
-    const isActive = appState.isSorting;
-    DOM.playBtn?.setAttribute('disabled', isActive);
-    DOM.sizeSlider?.setAttribute('disabled', isActive);
-    DOM.speedSlider?.setAttribute('disabled', isActive);
-    DOM.algoButtons.forEach(btn => btn.setAttribute('disabled', isActive));
-}
-
-// ============================================================================
-// SORTING ALGORITHMS
-// ============================================================================
-
-async function bubbleSort() {
-    const arr = [...appState.array];
-    const n = arr.length;
-    appState.totalSteps = (n * (n - 1)) / 2;
-    appState.sortingStep = 0;
-
-    for (let i = 0; i < n - 1; i++) {
-        for (let j = 0; j < n - i - 1; j++) {
-            if (!appState.isSorting) return;
-            if (appState.isPaused) {
-                await sleep(100);
-                j--;
-                continue;
-            }
-
-            appState.comparisons++;
-            playComparisonSound();
-            updateMetrics();
-
-            updateVisualizationBlock(j, 'comparing');
-            updateVisualizationBlock(j + 1, 'comparing');
-            updateExplanation(`Comparing arr[${j}] = ${arr[j]} with arr[${j + 1}] = ${arr[j + 1]}`);
-
-            await sleep(101 - appState.speed);
-
-            if (arr[j] > arr[j + 1]) {
-                appState.swaps++;
-                playSwapSound();
-                updateMetrics();
-
-                updateVisualizationBlock(j, 'swapping');
-                updateVisualizationBlock(j + 1, 'swapping');
-
-                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                appState.array = arr;
-                renderVisualization();
-
-                updateVisualizationBlock(j, 'swapping');
-                updateVisualizationBlock(j + 1, 'swapping');
-
-                await sleep(101 - appState.speed);
-            }
-
-            resetBlockStates();
-            appState.sortingStep++;
-            updateProgressBar();
-        }
-
-        for (let k = n - i - 1; k < n; k++) {
-            updateVisualizationBlock(k, 'sorted');
-        }
-    }
-
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.classList.remove('comparing', 'swapping');
-        block.classList.add('sorted');
-    });
-
-    updateExplanation('✅ Sorting complete!');
-    playCompleteSound();
-    appState.isSorting = false;
-    updateButtonStates();
-}
-
-async function selectionSort() {
-    const arr = [...appState.array];
-    const n = arr.length;
-    appState.totalSteps = (n * (n - 1)) / 2;
-    appState.sortingStep = 0;
-
-    for (let i = 0; i < n - 1; i++) {
-        let minIdx = i;
-        updateVisualizationBlock(i, 'sorted');
-
-        for (let j = i + 1; j < n; j++) {
-            if (!appState.isSorting) return;
-            if (appState.isPaused) {
-                await sleep(100);
-                j--;
-                continue;
-            }
-
-            appState.comparisons++;
-            playComparisonSound();
-            updateMetrics();
-
-            updateVisualizationBlock(j, 'comparing');
-            updateVisualizationBlock(minIdx, 'comparing');
-
-            await sleep(101 - appState.speed);
-
-            if (arr[j] < arr[minIdx]) {
-                minIdx = j;
-            }
-
-            resetBlockStates();
-            updateVisualizationBlock(i, 'sorted');
-            appState.sortingStep++;
-            updateProgressBar();
-        }
-
-        if (minIdx !== i) {
-            appState.swaps++;
-            playSwapSound();
-            updateMetrics();
-
-            updateVisualizationBlock(i, 'swapping');
-            updateVisualizationBlock(minIdx, 'swapping');
-
-            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
-            appState.array = arr;
-            renderVisualization();
-
-            await sleep(101 - appState.speed);
-        }
-
-        resetBlockStates();
-    }
-
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.classList.remove('comparing', 'swapping');
-        block.classList.add('sorted');
-    });
-
-    updateExplanation('✅ Sorting complete!');
-    playCompleteSound();
-    appState.isSorting = false;
-    updateButtonStates();
-}
-
-async function insertionSort() {
-    const arr = [...appState.array];
-    const n = arr.length;
-    appState.totalSteps = n - 1;
-    appState.sortingStep = 0;
-
-    for (let i = 1; i < n; i++) {
-        let key = arr[i];
-        let j = i - 1;
-
-        for (let k = 0; k < i; k++) {
-            updateVisualizationBlock(k, 'sorted');
-        }
-        updateVisualizationBlock(i, 'comparing');
-
-        updateExplanation(`Inserting arr[${i}] = ${key}`);
-
-        await sleep(101 - appState.speed);
-
-        while (j >= 0 && arr[j] > key) {
-            if (!appState.isSorting) return;
-            if (appState.isPaused) {
-                await sleep(100);
-                continue;
-            }
-
-            appState.comparisons++;
-            playComparisonSound();
-            updateMetrics();
-
-            updateVisualizationBlock(j, 'comparing');
-
-            arr[j + 1] = arr[j];
-            appState.array = arr;
-            renderVisualization();
-
-            for (let k = 0; k < i; k++) {
-                if (k < j + 1) updateVisualizationBlock(k, 'sorted');
-            }
-            updateVisualizationBlock(j, 'comparing');
-
-            await sleep(101 - appState.speed);
-            j--;
-        }
-
-        arr[j + 1] = key;
-        appState.swaps++;
-        playSwapSound();
-        appState.array = arr;
-        renderVisualization();
-
-        appState.sortingStep++;
-        updateProgressBar();
-        resetBlockStates();
-    }
-
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.classList.remove('comparing', 'swapping');
-        block.classList.add('sorted');
-    });
-
-    updateExplanation('✅ Sorting complete!');
-    playCompleteSound();
-    appState.isSorting = false;
-    updateButtonStates();
-}
-
-// ============================================================================
-// CONTROL FUNCTIONS
-// ============================================================================
-
-async function mergeSort() {
-    const arr = [...appState.array];
-    appState.totalSteps = arr.length * Math.log2(arr.length);
-    appState.sortingStep = 0;
-
-    async function mergeSortHelper(low, high) {
-        if (low < high) {
-            const mid = Math.floor((low + high) / 2);
-            await mergeSortHelper(low, mid);
-            await mergeSortHelper(mid + 1, high);
-            await merge(low, mid, high);
-        }
-    }
-
-    async function merge(low, mid, high) {
-        const left = arr.slice(low, mid + 1);
-        const right = arr.slice(mid + 1, high + 1);
-        let i = 0, j = 0, k = low;
-
-        while (i < left.length && j < right.length) {
-            if (!appState.isSorting) return;
-            if (appState.isPaused) {
-                await sleep(100);
-                continue;
-            }
-
-            appState.comparisons++;
-            playComparisonSound();
-            updateMetrics();
-
-            updateVisualizationBlock(low + i, 'comparing');
-            updateVisualizationBlock(mid + 1 + j, 'comparing');
-
-            await sleep(101 - appState.speed);
-
-            if (left[i] <= right[j]) {
-                arr[k++] = left[i++];
-            } else {
-                arr[k++] = right[j++];
-            }
-
-            appState.swaps++;
-            appState.sortingStep++;
-            appState.array = [...arr];
-            renderVisualization();
-            updateProgressBar();
-            resetBlockStates();
-        }
-
-        while (i < left.length) {
-            arr[k++] = left[i++];
-            appState.array = [...arr];
-            renderVisualization();
-        }
-
-        while (j < right.length) {
-            arr[k++] = right[j++];
-            appState.array = [...arr];
-            renderVisualization();
-        }
-    }
-
-    await mergeSortHelper(0, arr.length - 1);
-
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.classList.remove('comparing', 'swapping');
-        block.classList.add('sorted');
-    });
-
-    updateExplanation('✅ Sorting complete!');
-    playCompleteSound();
-    appState.isSorting = false;
-    updateButtonStates();
-}
-
-async function quickSort() {
-    const arr = [...appState.array];
-    appState.totalSteps = arr.length * Math.log2(arr.length);
-    appState.sortingStep = 0;
-
-    async function quickSortHelper(low, high) {
-        if (low < high) {
-            const pi = await partition(low, high);
-            await quickSortHelper(low, pi - 1);
-            await quickSortHelper(pi + 1, high);
-        }
-    }
-
-    async function partition(low, high) {
-        const pivot = arr[high];
-        let i = low - 1;
-
-        for (let j = low; j < high; j++) {
-            if (!appState.isSorting) return i + 1;
-            if (appState.isPaused) {
-                await sleep(100);
-                j--;
-                continue;
-            }
-
-            appState.comparisons++;
-            playComparisonSound();
-            updateMetrics();
-
-            updateVisualizationBlock(j, 'comparing');
-            updateVisualizationBlock(high, 'comparing');
-
-            await sleep(101 - appState.speed);
-
-            if (arr[j] < pivot) {
-                i++;
-                appState.swaps++;
-                playSwapSound();
-
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-                appState.array = [...arr];
-                renderVisualization();
-            }
-
-            appState.sortingStep++;
-            updateProgressBar();
-            resetBlockStates();
-        }
-
-        [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-        appState.array = [...arr];
-        renderVisualization();
-
-        return i + 1;
-    }
-
-    await quickSortHelper(0, arr.length - 1);
-
-    document.querySelectorAll('.array-block').forEach(block => {
-        block.classList.remove('comparing', 'swapping');
-        block.classList.add('sorted');
-    });
-
-    updateExplanation('✅ Sorting complete!');
-    playCompleteSound();
-    appState.isSorting = false;
-    updateButtonStates();
-}
-
-// ============================================================================
-// AI SUGGESTION
-// ============================================================================
-
-function analyzeArray() {
-    const arr = appState.array;
-    const n = arr.length;
-    
-    const isSorted = arr.every((v, i) => i === 0 || arr[i - 1] <= v);
-    if (isSorted) return 'insertion';
-    
-    const isReverseSorted = arr.every((v, i) => i === 0 || arr[i - 1] >= v);
-    if (isReverseSorted) return 'quick';
-    
-    let inversions = 0;
-    for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-            if (arr[i] > arr[j]) inversions++;
-        }
-    }
-    
-    const inversionRatio = inversions / (n * (n - 1) / 2);
-    
-    if (n <= 20) {
-        if (inversionRatio < 0.2) return 'insertion';
-        return 'bubble';
-    }
-    
-    if (inversionRatio < 0.2) return 'insertion';
-    if (n > 50) return 'merge';
-    return 'quick';
-}
-
-function suggestAlgorithm() {
-    const suggested = analyzeArray();
-    const algo = ALGORITHMS[suggested];
-    alert(`✨ Suggestion: ${algo.name}\n\n${algo.useCases}`);
-}
-
-async function startSort() {
-    if (appState.isSorting) return;
-
-    appState.isSorting = true;
-    appState.isPaused = false;
-    appState.comparisons = 0;
-    appState.swaps = 0;
-    appState.sortingStep = 0;
-    appState.startTime = Date.now();
-    updateButtonStates();
-    resetBlockStates();
-    updateMetrics();
-
-    const algo = appState.currentAlgorithm;
-    
-    if (algo === 'bubble') {
-        await bubbleSort();
-    } else if (algo === 'selection') {
-        await selectionSort();
-    } else if (algo === 'insertion') {
-        await insertionSort();
-    } else if (algo === 'merge') {
-        await mergeSort();
-    } else if (algo === 'quick') {
-        await quickSort();
-    }
-}
-
-function togglePause() {
-    appState.isPaused = !appState.isPaused;
-    DOM.pauseBtn.textContent = appState.isPaused ? '▶ Resume' : '⏸ Pause';
-}
-
-function resetSort() {
-    appState.isSorting = false;
-    appState.isPaused = false;
-    appState.comparisons = 0;
-    appState.swaps = 0;
-    appState.sortingStep = 0;
-    appState.totalSteps = 0;
-    appState.array = [...appState.originalArray];
-    resetBlockStates();
-    renderVisualization();
-    updateExplanation('Ready to sort! Select an algorithm and click Play.');
-    updateProgressBar();
-    updateMetrics();
-    updateButtonStates();
-    DOM.pauseBtn.textContent = '⏸ Pause';
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}

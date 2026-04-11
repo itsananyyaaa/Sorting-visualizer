@@ -3,209 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Premium sorting algorithm visualizer with real-time visualization, interactive controls, and educational explanations.">
-    <meta name="theme-color" content="#7c3aed">
-    <title>Sorting Algorithm Visualizer - Learn Sorting Algorithms Visually</title>
+    <title>Sorting Visualizer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-    <button id="themeToggle" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
-        <span>🌙</span>
-    </button>
-
-    <!-- Sound Toggle Button -->
-    <button id="soundToggle" class="sound-toggle" title="Toggle sound effects" aria-label="Toggle sound">
-        <span>🔕</span>
-    </button>
-
-    <!-- Hero Header -->
-    <header class="header" role="banner">
-        <div class="header-content">
-            <h1 class="title">Sorting Visualizer</h1>
-            <p class="subtitle">Watch sorting algorithms in action with real-time visualization and step-by-step explanations</p>
-            <div class="intro-text">
-                <p><strong>What is Sorting?</strong> Sorting arranges data in a specific order (ascending or descending). It's fundamental in computer science for efficient searching, database operations, and data analysis.</p>
+    <div class="app">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">Sorting Visualizer</h1>
+                <p class="header-subtitle">Understand how sorting algorithms work through interactive visualization</p>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar" role="complementary">
-            <!-- Algorithm Selection Panel -->
-            <section class="control-section">
-                <h2>Algorithm</h2>
-                <div class="algo-buttons" role="radiogroup" aria-label="Select sorting algorithm">
-                    <button class="algo-btn active" data-algo="bubble" role="radio" aria-checked="true">Bubble</button>
-                    <button class="algo-btn" data-algo="selection" role="radio" aria-checked="false">Selection</button>
-                    <button class="algo-btn" data-algo="insertion" role="radio" aria-checked="false">Insertion</button>
-                    <button class="algo-btn" data-algo="merge" role="radio" aria-checked="false">Merge</button>
-                    <button class="algo-btn" data-algo="quick" role="radio" aria-checked="false">Quick</button>
+        <!-- MAIN CONTAINER -->
+        <main class="container">
+
+            <!-- 2. ALGORITHM SELECTION SECTION -->
+            <section class="section">
+                <h2 class="section-title">Select Algorithm</h2>
+                <div class="card">
+                    <select id="algorithmSelect" class="select">
+                        <option value="">Choose an algorithm...</option>
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="merge">Merge Sort</option>
+                        <option value="quick">Quick Sort</option>
+                    </select>
                 </div>
-                <div class="button-group" style="margin-top: 10px;">
-                    <button id="suggestBtn" class="btn btn-outline" title="Get AI suggestion">💡 Suggest</button>
-                </div>
-                <p class="algorithm-description" id="algorithmDesc" aria-live="polite">
-                    Select an algorithm to see its description here.
-                </p>
-                <div class="pseudo-code" id="pseudoCode">
-                    <h4>Pseudo Code</h4>
-                    <pre id="codeContent" aria-label="Algorithm pseudo code"></pre>
+
+                <!-- Algorithm Details -->
+                <div id="algoDetailsSection" style="display: none;">
+                    <div class="card">
+                        <div id="algoInfo"></div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Control Buttons -->
-            <section class="control-section">
-                <h2>Controls</h2>
-                <div class="button-group">
-                    <button id="playBtn" class="btn btn-primary" aria-label="Start sorting">▶ Play</button>
-                    <button id="pauseBtn" class="btn btn-secondary" disabled aria-label="Pause sorting">⏸ Pause</button>
-                    <button id="resetBtn" class="btn btn-secondary" aria-label="Reset array">↻ Reset</button>
+            <!-- 3. ARRAY SECTION -->
+            <section class="section">
+                <h2 class="section-title">Set Array</h2>
+                <div class="card">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="customInput" 
+                            class="input" 
+                            placeholder="Enter numbers separated by commas (e.g., 5,2,8,1,9)"
+                        >
+                        <div id="customError" class="error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="applyBtn" class="btn btn-primary">Apply Array</button>
+                        <button id="randomBtn" class="btn btn-secondary">Generate Random</button>
+                    </div>
                 </div>
             </section>
 
-            <!-- Settings Panel -->
-            <section class="control-section">
-                <h2>Settings</h2>
-                <div class="setting-item">
-                    <label for="sizeSlider">Array Size</label>
-                    <div class="slider-container">
-                        <input type="range" id="sizeSlider" min="5" max="50" value="20" class="slider" aria-label="Array size">
-                        <span id="sizeValue" class="slider-value" aria-live="polite">20</span>
+            <!-- 4. VISUALIZATION SECTION -->
+            <section class="section">
+                <h2 class="section-title">Visualization</h2>
+                <div class="card">
+                    <div id="stepExplanation" class="step-explanation">
+                        <p>Select an algorithm and set an array to begin</p>
                     </div>
-                </div>
-                <div class="setting-item">
-                    <label for="speedSlider">Speed</label>
-                    <div class="slider-container">
-                        <input type="range" id="speedSlider" min="0.1" max="3" step="0.1" value="1" class="slider" aria-label="Animation speed">
-                        <span id="speedValue" class="slider-value" aria-live="polite">1.0x</span>
+
+                    <div id="arrayVisualization" class="visualization-canvas"></div>
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="progress-container">
-                    <label for="progressFill">Progress</label>
-                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <span id="progressText" class="progress-text" aria-live="polite">0%</span>
                 </div>
             </section>
 
-            <!-- Array Input Panel -->
-            <section class="control-section">
-                <h2>Array Input</h2>
-                <input 
-                    type="text" 
-                    id="customInput" 
-                    placeholder="Enter numbers (1,5,3,2)" 
-                    class="custom-input"
-                    aria-label="Custom array input"
-                >
-                <button id="applyBtn" class="btn btn-outline" aria-label="Apply custom array">Apply</button>
-                <button id="randomBtn" class="btn btn-outline" aria-label="Generate random array">🔀 Random</button>
+            <!-- 4.5 CURRENT STEP TRACE SECTION -->
+            <section class="section">
+                <h2 class="section-title">Current Step Trace</h2>
+                <div class="card">
+                    <div id="codeTrace" class="code-trace">
+                        <p class="code-placeholder">Steps will appear here as the algorithm runs</p>
+                    </div>
+                </div>
             </section>
 
-            <!-- Mode Selection -->
-            <section class="control-section">
-                <h2>Mode</h2>
-                <select id="modeSelect" class="custom-select" aria-label="Select visualization mode">
-                    <option value="normal">Normal View</option>
-                    <option value="comparison">Comparison Mode</option>
-                    <option value="gamified">Gamified Mode</option>
-                    <option value="benchmark">Benchmark Mode</option>
-                </select>
+            <!-- 5. CONTROLS SECTION -->
+            <section class="section">
+                <h2 class="section-title">Playback</h2>
+                <div class="card">
+                    <div class="controls-grid">
+                        <button id="playBtn" class="btn btn-primary" disabled>▶ Play</button>
+                        <button id="pauseBtn" class="btn btn-secondary" disabled>⏸ Pause</button>
+                        <button id="prevBtn" class="btn btn-secondary" disabled>⟨ Previous</button>
+                        <button id="nextBtn" class="btn btn-secondary" disabled>Next ⟩</button>
+                        <button id="resetBtn" class="btn btn-secondary">↻ Reset</button>
+                    </div>
+
+                    <div class="slider-section">
+                        <label class="slider-label">Animation Speed</label>
+                        <div class="slider-container">
+                            <input type="range" id="speedSlider" class="slider" min="50" max="1000" value="300">
+                            <span id="speedValue" class="slider-value">Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-section">
+                        <label class="slider-label">Array Size</label>
+                        <div class="slider-container">
+                            <input type="range" id="sizeSlider" class="slider" min="5" max="50" value="20">
+                            <span id="sizeValue" class="slider-value">20</span>
+                        </div>
+                    </div>
+                </div>
             </section>
-        </aside>
 
-        <!-- Main Content Area -->
-        <main class="main-content" role="main">
-            <!-- Normal Mode Container -->
-            <div id="normalMode" class="mode-container">
-                <!-- Visualization Area -->
-                <section class="visualization-section">
-                    <div class="section-header">
-                        <h2>Visualization</h2>
-                    </div>
-                    <div class="visualization-container" id="visualization" role="presentation" aria-label="Sorting visualization area">
-                        <!-- Array elements will be rendered here -->
-                    </div>
-                </section>
-
-                <!-- Info Grid -->
-                <div class="info-grid">
-                    <!-- Step Explanation Panel -->
-                    <section class="info-panel">
-                        <h3>Step Explanation</h3>
-                        <div class="explanation-content" id="explanation" aria-live="polite" aria-label="Current step explanation">
-                            <p>Ready to sort! Select an algorithm and click Play.</p>
+            <!-- 6. STATISTICS SECTION -->
+            <section class="section">
+                <h2 class="section-title">Statistics</h2>
+                <div class="card">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Step Progress</div>
+                            <div class="stat-number" id="stepCount">0 / 0</div>
                         </div>
-                    </section>
-
-                    <!-- Complexity Metrics Panel -->
-                    <section class="info-panel">
-                        <h3>Complexity Metrics</h3>
-                        <div class="metrics-content" id="metricsContent" aria-label="Algorithm complexity information">
-                            <!-- Complexity info will be inserted here -->
+                        <div class="stat-box">
+                            <div class="stat-label">Comparisons</div>
+                            <div class="stat-number" id="comparisonCount">0</div>
                         </div>
-                    </section>
+                        <div class="stat-box">
+                            <div class="stat-label">Swaps</div>
+                            <div class="stat-number" id="swapCount">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. ALGORITHM DETAILS SECTION -->
+            <section class="section" id="detailsSection" style="display: none;">
+                <h2 class="section-title">Algorithm Details</h2>
+
+                <!-- Algorithm Explanation -->
+                <div class="card">
+                    <h3>How It Works</h3>
+                    <div id="algoExplanation" class="explanation-text"></div>
                 </div>
 
-                <!-- Code Trace Section -->
-                <section class="info-section">
-                    <h3>Code Trace</h3>
-                    <div class="code-trace" id="codeTrace" aria-live="polite" aria-label="Code execution trace">
-                        <p class="placeholder">Code execution trace will appear here...</p>
-                    </div>
-                </section>
-            </div>
+                <!-- Pseudocode -->
+                <div class="card">
+                    <h3>Pseudocode</h3>
+                    <pre id="pseudoCode" class="pseudo-code"></pre>
+                </div>
 
-            <!-- Gamified Mode Container -->
-            <div id="gamifiedMode" class="mode-container" style="display: none;">
-                <section class="visualization-section">
-                    <div class="section-header">
-                        <h2>Gamified Mode - Sort by Clicking!</h2>
-                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px;">
-                            Click on bars to swap them. Score: <span id="gameScore">0</span> | Timer: <span id="gameTimer">0s</span>
-                        </div>
-                    </div>
-                    <div class="visualization-container" id="gameViz" role="presentation" aria-label="Interactive game visualization">
-                        <!-- Game elements -->
-                    </div>
-                </section>
-            </div>
+            </section>
 
-            <!-- Benchmark Mode Container -->
-            <div id="benchmarkMode" class="mode-container" style="display: none;">
-                <section class="visualization-section">
-                    <div class="section-header">
-                        <h2>Benchmark Mode - Performance Comparison</h2>
-                        <button id="runBenchmarkBtn" class="btn btn-primary" style="margin-top: 10px;">▶ Run Benchmark</button>
-                    </div>
-                    <canvas id="benchmarkCanvas" width="800" height="400" style="border: 1px solid var(--border); border-radius: 8px; margin-top: 20px;"></canvas>
-                </section>
-            </div>
-
-            <!-- Comparison Mode Container -->
-            <div id="comparisonMode" class="mode-container comparison-grid" style="display: none;">
-                <section class="visualization-section">
-                    <h3>Algorithm Comparison</h3>
-                    <div class="comparison-pair">
-                        <div>
-                            <h4>Algorithm 1</h4>
-                            <div class="visualization-container" id="comparisonViz1" role="presentation" aria-label="First algorithm visualization">
-                                <!-- First algorithm visualization -->
-                            </div>
-                        </div>
-                        <div>
-                            <h4>Algorithm 2</h4>
-                            <div class="visualization-container" id="comparisonViz2" role="presentation" aria-label="Second algorithm visualization">
-                                <!-- Second algorithm visualization -->
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
         </main>
     </div>
 
