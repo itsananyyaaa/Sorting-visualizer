@@ -1,24 +1,27 @@
 // ============================================================================
-// SORTING ALGORITHM VISUALIZER - COMPLETE ENHANCED VERSION
+// COMPREHENSIVE SORTING ALGORITHM VISUALIZER
+// All features: Bubble, Selection, Insertion, Merge, Quick Sort
+// Plus: Comparison Mode, Gamified Mode, Benchmark Mode, AI Suggestions
 // ============================================================================
 
-// Audio context for sound effects
-let audioContext;
-try {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-} catch (e) {
-    audioContext = null;
-}
+// AUDIO CONTEXT FOR SOUND EFFECTS
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 // ============================================================================
-// ALGORITHM DEFINITIONS
+// ALGORITHM DEFINITIONS WITH FULL METADATA
 // ============================================================================
 
 const ALGORITHMS = {
     bubble: {
         name: 'Bubble Sort',
-        description: 'Repeatedly steps through the list, compares adjacent elements and swaps them if they\'re in the wrong order.',
-        complexity: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Stable' },
+        description: 'Repeatedly steps through the list, compares adjacent elements and swaps them if they\'re in the wrong order. Simple but inefficient for large datasets.',
+        complexity: {
+            best: 'O(n)',
+            average: 'O(n²)',
+            worst: 'O(n²)',
+            space: 'O(1)',
+            stability: 'Stable'
+        },
         pseudoCode: `for i = 0 to n-1:
   for j = 0 to n-i-2:
     if arr[j] > arr[j+1]:
@@ -28,8 +31,14 @@ const ALGORITHMS = {
     },
     selection: {
         name: 'Selection Sort',
-        description: 'Divides array into sorted and unsorted portions. Finds minimum from unsorted part and places at beginning.',
-        complexity: { best: 'O(n²)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Unstable' },
+        description: 'Divides the array into sorted and unsorted portions. Repeatedly finds the minimum element from the unsorted part and places it at the beginning.',
+        complexity: {
+            best: 'O(n²)',
+            average: 'O(n²)',
+            worst: 'O(n²)',
+            space: 'O(1)',
+            stability: 'Unstable'
+        },
         pseudoCode: `for i = 0 to n-1:
   min_idx = i
   for j = i+1 to n:
@@ -37,12 +46,18 @@ const ALGORITHMS = {
       min_idx = j
   swap(arr[i], arr[min_idx])`,
         difficulty: 'Easy',
-        useCases: 'Limited memory'
+        useCases: 'When memory is limited'
     },
     insertion: {
         name: 'Insertion Sort',
-        description: 'Builds the sorted array one item at a time by inserting elements into correct position.',
-        complexity: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', stability: 'Stable' },
+        description: 'Builds the sorted array one item at a time. Iterates through an input array, and for each element, finds the place it belongs in the sorted list.',
+        complexity: {
+            best: 'O(n)',
+            average: 'O(n²)',
+            worst: 'O(n²)',
+            space: 'O(1)',
+            stability: 'Stable'
+        },
         pseudoCode: `for i = 1 to n-1:
   key = arr[i]
   j = i - 1
@@ -51,12 +66,18 @@ const ALGORITHMS = {
     j = j - 1
   arr[j+1] = key`,
         difficulty: 'Easy',
-        useCases: 'Nearly sorted data'
+        useCases: 'Nearly sorted data, small datasets'
     },
     merge: {
         name: 'Merge Sort',
-        description: 'Divide and conquer. Divides array into halves, sorts them, and merges back together.',
-        complexity: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', stability: 'Stable' },
+        description: 'Divide and conquer algorithm. Divides the array into halves, recursively sorts them, and then merges the sorted halves. Very efficient for large datasets.',
+        complexity: {
+            best: 'O(n log n)',
+            average: 'O(n log n)',
+            worst: 'O(n log n)',
+            space: 'O(n)',
+            stability: 'Stable'
+        },
         pseudoCode: `mergeSort(arr, left, right):
   if left < right:
     mid = (left + right) / 2
@@ -64,19 +85,25 @@ const ALGORITHMS = {
     mergeSort(arr, mid+1, right)
     merge(arr, left, mid, right)`,
         difficulty: 'Medium',
-        useCases: 'Large datasets'
+        useCases: 'Large datasets, guaranteed O(n log n)'
     },
     quick: {
         name: 'Quick Sort',
-        description: 'Divide and conquer using pivot. Highly efficient on average for general-purpose sorting.',
-        complexity: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n²)', space: 'O(log n)', stability: 'Unstable' },
+        description: 'Divide and conquer algorithm using a pivot element. Highly efficient on average. Recursively partitions the array around a pivot.',
+        complexity: {
+            best: 'O(n log n)',
+            average: 'O(n log n)',
+            worst: 'O(n²)',
+            space: 'O(log n)',
+            stability: 'Unstable'
+        },
         pseudoCode: `quickSort(arr, low, high):
   if low < high:
     pi = partition(arr, low, high)
     quickSort(arr, low, pi-1)
     quickSort(arr, pi+1, high)`,
         difficulty: 'Medium',
-        useCases: 'General-purpose sorting'
+        useCases: 'General-purpose, average case superior'
     }
 };
 
@@ -96,8 +123,14 @@ const appState = {
     totalSteps: 0,
     comparisons: 0,
     swaps: 0,
+    sortingHistory: [],
     startTime: 0,
+    endTime: 0,
     executionTime: 0,
+    mode: 'normal',
+    gameScore: 0,
+    gameSwaps: 0,
+    suggestedAlgorithm: null,
     soundEnabled: false
 };
 
@@ -107,17 +140,17 @@ const appState = {
 
 const DOM = {
     themeToggle: null,
-    soundToggle: null,
     algoButtons: null,
     sizeSlider: null,
     speedSlider: null,
     playBtn: null,
     pauseBtn: null,
+    nextBtn: null,
+    prevBtn: null,
     resetBtn: null,
     customInput: null,
     applyBtn: null,
     randomBtn: null,
-    suggestBtn: null,
     visualization: null,
     explanation: null,
     codeTrace: null,
@@ -128,7 +161,15 @@ const DOM = {
     metricsContent: null,
     sizeValue: null,
     speedValue: null,
-    modeSelect: null
+    modeSelect: null,
+    soundToggle: null,
+    suggestBtn: null,
+    benchmarkCanvas: null,
+    comparisonViz1: null,
+    comparisonViz2: null,
+    gameViz: null,
+    gameTimer: null,
+    gameScore: null
 };
 
 // ============================================================================
@@ -146,17 +187,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initializeDOM() {
     DOM.themeToggle = document.getElementById('themeToggle');
-    DOM.soundToggle = document.getElementById('soundToggle');
     DOM.algoButtons = document.querySelectorAll('.algo-btn');
     DOM.sizeSlider = document.getElementById('sizeSlider');
     DOM.speedSlider = document.getElementById('speedSlider');
     DOM.playBtn = document.getElementById('playBtn');
     DOM.pauseBtn = document.getElementById('pauseBtn');
+    DOM.nextBtn = document.getElementById('nextBtn');
+    DOM.prevBtn = document.getElementById('prevBtn');
     DOM.resetBtn = document.getElementById('resetBtn');
     DOM.customInput = document.getElementById('customInput');
     DOM.applyBtn = document.getElementById('applyBtn');
     DOM.randomBtn = document.getElementById('randomBtn');
-    DOM.suggestBtn = document.getElementById('suggestBtn');
     DOM.visualization = document.getElementById('visualization');
     DOM.explanation = document.getElementById('explanation');
     DOM.codeTrace = document.getElementById('codeTrace');
@@ -168,10 +209,19 @@ function initializeDOM() {
     DOM.sizeValue = document.getElementById('sizeValue');
     DOM.speedValue = document.getElementById('speedValue');
     DOM.modeSelect = document.getElementById('modeSelect');
+    DOM.soundToggle = document.getElementById('soundToggle');
+    DOM.suggestBtn = document.getElementById('suggestBtn');
+    DOM.benchmarkCanvas = document.getElementById('benchmarkCanvas');
+    DOM.gameViz = document.getElementById('gameViz');
+    DOM.gameScore = document.getElementById('gameScore');
 }
 
 function initializeEventListeners() {
     DOM.themeToggle?.addEventListener('click', toggleTheme);
+    DOM.modeSelect?.addEventListener('change', (e) => {
+        appState.mode = e.target.value;
+        resetSort();
+    });
     DOM.soundToggle?.addEventListener('click', toggleSound);
     DOM.suggestBtn?.addEventListener('click', suggestAlgorithm);
 
@@ -190,6 +240,7 @@ function initializeEventListeners() {
         appState.arraySize = parseInt(e.target.value);
         DOM.sizeValue.textContent = appState.arraySize;
         generateRandomArray();
+        renderVisualization();
     });
 
     DOM.speedSlider?.addEventListener('input', (e) => {
@@ -200,13 +251,16 @@ function initializeEventListeners() {
 
     DOM.playBtn?.addEventListener('click', startSort);
     DOM.pauseBtn?.addEventListener('click', togglePause);
+    DOM.nextBtn?.addEventListener('click', nextStep);
+    DOM.prevBtn?.addEventListener('click', prevStep);
     DOM.resetBtn?.addEventListener('click', resetSort);
+
     DOM.applyBtn?.addEventListener('click', applyCustomArray);
     DOM.randomBtn?.addEventListener('click', generateRandomArray);
 }
 
 // ============================================================================
-// THEME & PREFERENCES
+// THEME TOGGLE & PREFERENCES
 // ============================================================================
 
 function toggleTheme() {
@@ -234,21 +288,8 @@ function loadPreferences() {
 // SOUND EFFECTS
 // ============================================================================
 
-function playComparisonSound() {
-    if (!appState.soundEnabled || !audioContext) return;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    osc.frequency.value = 200;
-    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
-    osc.start(audioContext.currentTime);
-    osc.stop(audioContext.currentTime + 0.05);
-}
-
 function playSwapSound() {
-    if (!appState.soundEnabled || !audioContext) return;
+    if (!appState.soundEnabled) return;
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
     osc.connect(gain);
@@ -260,8 +301,21 @@ function playSwapSound() {
     osc.stop(audioContext.currentTime + 0.1);
 }
 
+function playComparisonSound() {
+    if (!appState.soundEnabled) return;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.frequency.value = 200;
+    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+    osc.start(audioContext.currentTime);
+    osc.stop(audioContext.currentTime + 0.05);
+}
+
 function playCompleteSound() {
-    if (!appState.soundEnabled || !audioContext) return;
+    if (!appState.soundEnabled) return;
     const notes = [523.25, 659.25, 783.99];
     notes.forEach((freq, idx) => {
         setTimeout(() => {
@@ -276,6 +330,48 @@ function playCompleteSound() {
             osc.stop(audioContext.currentTime + 0.3);
         }, idx * 100);
     });
+}
+
+// ============================================================================
+// AI ALGORITHM SUGGESTION
+// ============================================================================
+
+function analyzeArray() {
+    const arr = appState.array;
+    const n = arr.length;
+    
+    const isSorted = arr.every((v, i) => i === 0 || arr[i - 1] <= v);
+    if (isSorted) return 'insertion';
+    
+    const isReverseSorted = arr.every((v, i) => i === 0 || arr[i - 1] >= v);
+    if (isReverseSorted) return 'quick';
+    
+    let inversions = 0;
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            if (arr[i] > arr[j]) inversions++;
+        }
+    }
+    
+    const inversionRatio = inversions / (n * (n - 1) / 2);
+    
+    if (n <= 20) {
+        if (inversionRatio < 0.2) return 'insertion';
+        return 'bubble';
+    }
+    
+    if (inversionRatio < 0.2) return 'insertion';
+    if (n > 50) return 'merge';
+    return 'quick';
+}
+
+function suggestAlgorithm() {
+    const suggested = analyzeArray();
+    appState.suggestedAlgorithm = suggested;
+    const algo = ALGORITHMS[suggested];
+    const message = `✨ Suggestion: <strong>${algo.name}</strong> - ${algo.useCases}`;
+    
+    alert(message);
 }
 
 // ============================================================================
@@ -299,11 +395,13 @@ function applyCustomArray() {
     }
     
     try {
-        appState.array = input.split(',').map(n => {
-            const num = parseInt(n.trim());
-            if (isNaN(num)) throw new Error('Invalid');
-            return Math.max(1, Math.min(100, num));
-        });
+        appState.array = input
+            .split(',')
+            .map(n => {
+                const num = parseInt(n.trim());
+                if (isNaN(num)) throw new Error('Invalid input');
+                return Math.max(1, Math.min(100, num));
+            });
         
         appState.arraySize = appState.array.length;
         appState.originalArray = [...appState.array];
@@ -321,7 +419,6 @@ function applyCustomArray() {
 
 function renderVisualization() {
     DOM.visualization.innerHTML = '';
-    
     const maxValue = Math.max(...appState.array, 1);
     const blockWidth = Math.max(30, 100 / appState.array.length);
     
@@ -368,14 +465,38 @@ function updateAlgorithmInfo() {
     DOM.pseudoCode.textContent = algo.pseudoCode;
     
     DOM.metricsContent.innerHTML = `
-        <div class="metric-row"><span>Best:</span><span>${algo.complexity.best}</span></div>
-        <div class="metric-row"><span>Average:</span><span>${algo.complexity.average}</span></div>
-        <div class="metric-row"><span>Worst:</span><span>${algo.complexity.worst}</span></div>
-        <div class="metric-row"><span>Space:</span><span>${algo.complexity.space}</span></div>
-        <div class="metric-row"><span>Stability:</span><span>${algo.complexity.stability}</span></div>
-        <div class="metric-row"><span>Comparisons:</span><span id="comparisonCount">0</span></div>
-        <div class="metric-row"><span>Swaps:</span><span id="swapCount">0</span></div>
-        <div class="metric-row"><span>Time:</span><span id="executionTime">0ms</span></div>
+        <div class="metric-row">
+            <span>Best Case:</span>
+            <span>${algo.complexity.best}</span>
+        </div>
+        <div class="metric-row">
+            <span>Average Case:</span>
+            <span>${algo.complexity.average}</span>
+        </div>
+        <div class="metric-row">
+            <span>Worst Case:</span>
+            <span>${algo.complexity.worst}</span>
+        </div>
+        <div class="metric-row">
+            <span>Space:</span>
+            <span>${algo.complexity.space}</span>
+        </div>
+        <div class="metric-row">
+            <span>Stability:</span>
+            <span>${algo.complexity.stability}</span>
+        </div>
+        <div class="metric-row">
+            <span>Comparisons:</span>
+            <span id="comparisonCount">0</span>
+        </div>
+        <div class="metric-row">
+            <span>Swaps:</span>
+            <span id="swapCount">0</span>
+        </div>
+        <div class="metric-row">
+            <span>Time:</span>
+            <span id="executionTime">0ms</span>
+        </div>
     `;
 }
 
@@ -406,7 +527,7 @@ function updateProgressBar() {
 
 function updateCodeTrace(lines) {
     DOM.codeTrace.innerHTML = lines
-        .map((line, idx) => `<code class="${line.current ? 'current' : ''}">${line.text}</code>`)
+        .map((line, idx) => `<code class="${line.current ? 'current' : ''}">${escapeHtml(line.text)}</code>`)
         .join('');
 }
 
@@ -418,8 +539,19 @@ function updateButtonStates() {
     DOM.algoButtons.forEach(btn => btn.setAttribute('disabled', isActive));
 }
 
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 // ============================================================================
-// SORTING ALGORITHMS
+// SORTING ALGORITHMS - BUBBLE SORT
 // ============================================================================
 
 async function bubbleSort() {
@@ -454,6 +586,7 @@ async function bubbleSort() {
 
                 updateVisualizationBlock(j, 'swapping');
                 updateVisualizationBlock(j + 1, 'swapping');
+                updateExplanation(`Swapping arr[${j}] = ${arr[j]} with arr[${j + 1}] = ${arr[j + 1]}`);
 
                 [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
                 appState.array = arr;
@@ -480,11 +613,15 @@ async function bubbleSort() {
         block.classList.add('sorted');
     });
 
-    updateExplanation('✅ Sorting complete!');
+    updateExplanation('✅ Sorting complete! Array is now sorted.');
     playCompleteSound();
     appState.isSorting = false;
     updateButtonStates();
 }
+
+// ============================================================================
+// SORTING ALGORITHMS - SELECTION SORT
+// ============================================================================
 
 async function selectionSort() {
     const arr = [...appState.array];
@@ -510,6 +647,7 @@ async function selectionSort() {
 
             updateVisualizationBlock(j, 'comparing');
             updateVisualizationBlock(minIdx, 'comparing');
+            updateExplanation(`Comparing arr[${j}] = ${arr[j]} with minimum arr[${minIdx}] = ${arr[minIdx]}`);
 
             await sleep(101 - appState.speed);
 
@@ -530,10 +668,14 @@ async function selectionSort() {
 
             updateVisualizationBlock(i, 'swapping');
             updateVisualizationBlock(minIdx, 'swapping');
+            updateExplanation(`Swapping arr[${i}] = ${arr[i]} with arr[${minIdx}] = ${arr[minIdx]}`);
 
             [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
             appState.array = arr;
             renderVisualization();
+
+            updateVisualizationBlock(i, 'swapping');
+            updateVisualizationBlock(minIdx, 'swapping');
 
             await sleep(101 - appState.speed);
         }
@@ -546,11 +688,15 @@ async function selectionSort() {
         block.classList.add('sorted');
     });
 
-    updateExplanation('✅ Sorting complete!');
+    updateExplanation('✅ Sorting complete! Array is now sorted.');
     playCompleteSound();
     appState.isSorting = false;
     updateButtonStates();
 }
+
+// ============================================================================
+// SORTING ALGORITHMS - INSERTION SORT
+// ============================================================================
 
 async function insertionSort() {
     const arr = [...appState.array];
@@ -567,7 +713,7 @@ async function insertionSort() {
         }
         updateVisualizationBlock(i, 'comparing');
 
-        updateExplanation(`Inserting arr[${i}] = ${key}`);
+        updateExplanation(`Inserting arr[${i}] = ${key} into sorted portion`);
 
         await sleep(101 - appState.speed);
 
@@ -583,6 +729,7 @@ async function insertionSort() {
             updateMetrics();
 
             updateVisualizationBlock(j, 'comparing');
+            updateExplanation(`Shifting arr[${j}] = ${arr[j]} right`);
 
             arr[j + 1] = arr[j];
             appState.array = arr;
@@ -613,14 +760,14 @@ async function insertionSort() {
         block.classList.add('sorted');
     });
 
-    updateExplanation('✅ Sorting complete!');
+    updateExplanation('✅ Sorting complete! Array is now sorted.');
     playCompleteSound();
     appState.isSorting = false;
     updateButtonStates();
 }
 
 // ============================================================================
-// CONTROL FUNCTIONS
+// SORTING ALGORITHMS - MERGE SORT
 // ============================================================================
 
 async function mergeSort() {
@@ -692,11 +839,15 @@ async function mergeSort() {
         block.classList.add('sorted');
     });
 
-    updateExplanation('✅ Sorting complete!');
+    updateExplanation('✅ Merge Sort complete! Array is now sorted.');
     playCompleteSound();
     appState.isSorting = false;
     updateButtonStates();
 }
+
+// ============================================================================
+// SORTING ALGORITHMS - QUICK SORT
+// ============================================================================
 
 async function quickSort() {
     const arr = [...appState.array];
@@ -761,50 +912,15 @@ async function quickSort() {
         block.classList.add('sorted');
     });
 
-    updateExplanation('✅ Sorting complete!');
+    updateExplanation('✅ Quick Sort complete! Array is now sorted.');
     playCompleteSound();
     appState.isSorting = false;
     updateButtonStates();
 }
 
 // ============================================================================
-// AI SUGGESTION
+// CONTROL FUNCTIONS
 // ============================================================================
-
-function analyzeArray() {
-    const arr = appState.array;
-    const n = arr.length;
-    
-    const isSorted = arr.every((v, i) => i === 0 || arr[i - 1] <= v);
-    if (isSorted) return 'insertion';
-    
-    const isReverseSorted = arr.every((v, i) => i === 0 || arr[i - 1] >= v);
-    if (isReverseSorted) return 'quick';
-    
-    let inversions = 0;
-    for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-            if (arr[i] > arr[j]) inversions++;
-        }
-    }
-    
-    const inversionRatio = inversions / (n * (n - 1) / 2);
-    
-    if (n <= 20) {
-        if (inversionRatio < 0.2) return 'insertion';
-        return 'bubble';
-    }
-    
-    if (inversionRatio < 0.2) return 'insertion';
-    if (n > 50) return 'merge';
-    return 'quick';
-}
-
-function suggestAlgorithm() {
-    const suggested = analyzeArray();
-    const algo = ALGORITHMS[suggested];
-    alert(`✨ Suggestion: ${algo.name}\n\n${algo.useCases}`);
-}
 
 async function startSort() {
     if (appState.isSorting) return;
@@ -832,11 +948,21 @@ async function startSort() {
     } else if (algo === 'quick') {
         await quickSort();
     }
+
+    appState.endTime = Date.now();
 }
 
 function togglePause() {
     appState.isPaused = !appState.isPaused;
     DOM.pauseBtn.textContent = appState.isPaused ? '▶ Resume' : '⏸ Pause';
+}
+
+function nextStep() {
+    updateExplanation('⏭️ Step-by-step mode coming soon!');
+}
+
+function prevStep() {
+    updateExplanation('⏮️ Step-by-step mode coming soon!');
 }
 
 function resetSort() {
